@@ -2,39 +2,45 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, Textarea } from '@tarojs/components';
 import Taro, { useRouter, useDidShow } from '@tarojs/taro';
 import StatusTag from '@/components/StatusTag';
-import { mockMeetings, severityMap, conclusionMap } from '@/data/mockData';
-import type { Meeting, ProblemItem } from '@/types';
+import { severityMap, conclusionMap } from '@/data/mockData';
+import { generateId, getMaterialTypeLabel } from '@/utils';
+import { useMeetingStore } from '@/store/useMeetingStore';
+import type { ProblemItem, MaterialItem } from '@/types';
 import styles from './index.module.scss';
-
-interface ProblemConfirm extends ProblemItem {
-  isClosed?: boolean | null;
-  response?: string;
-}
 
 const RectificationPage: React.FC = () => {
   const router = useRouter();
-  const [meeting, setMeeting] = useState<Meeting | null>(null);
-  const [problems, setProblems] = useState<ProblemConfirm[]>([]);
+  const meetingId = router.params.id || '';
+  
+  const meeting = useMeetingStore(state => 
+    state.meetings.find(m => m.id === meetingId)
+  );
+  const initFromStorage = useMeetingStore(state => state.initFromStorage);
+  const setProblemRectified = useMeetingStore(state => state.setProblemRectified);
+  const updateProblem = useMeetingStore(state => state.updateProblem);
+  const addRectificationMaterial = useMeetingStore(state => state.addRectificationMaterial);
+  const updateMeeting = useMeetingStore(state => state.updateMeeting);
+  
   const [expertOpinion, setExpertOpinion] = useState('');
+  const [editingResponseId, setEditingResponseId] = useState('');
+  const [editingResponse, setEditingResponse] = useState('');
 
   useDidShow(() => {
-    const id = router.params.id;
-    const found = mockMeetings.find(m => m.id === id);
-    if (found) {
-      setMeeting(found);
-      const probs: ProblemConfirm[] = found.problems.map(p => ({
-        ...p,
-        isClosed: p.isRectified ? true : null,
-        response: p.isRectified ? '已按要求完成整改，补充了相关计算和图纸。' : ''
-      }));
-      setProblems(probs);
+    console.log('[RectificationPage] useDidShow - 刷新数据');
+    initFromStorage();
+    if (meeting) {
+      setExpertOpinion(meeting.rectificationExpertOpinion || '');
     }
   });
 
+  const problems: ProblemItem[] = meeting?.problems || [];
+
+  const closedCount = problems.filter(p => p.isRectified === true).length;
+  const pendingCount = problems.filter(p => p.isRectified === undefined || p.isRectified === false).length;
+  const totalCount = problems.length;
+
   const handleConfirm = (problemId: string, isClosed: boolean) => {
-    setProblems(prev => prev.map(p => 
-      p.id === problemId ? { ...p, isClosed } : p
-    ));
+    setProblemRectified(meetingId, problemId, isClosed);
   };
 
   const handleViewMaterial = (name: string) => {
@@ -42,15 +48,30 @@ const RectificationPage: React.FC = () => {
   };
 
   const handleUploadMaterial = () => {
-    Taro.showToast({ title: '上传整改材料', icon: 'none' });
+    const newMaterial: Omit<MaterialItem, 'id'> = {
+      name: `整改方案_${meeting?.projectName || '项目'}_v2.pdf`,
+      type: 'rectification',
+      size: `${(Math.random() * 3 + 1).toFixed(1)}MB`,
+      uploadTime: new Date().toLocaleString()
+    };
+    addRectificationMaterial(meetingId, newMaterial);
+    Taro.showToast({ title: '上传成功', icon: 'success' });
   };
 
-  const closedCount = problems.filter(p => p.isClosed === true).length;
-  const pendingCount = problems.filter(p => p.isClosed === null || p.isClosed === false).length;
-  const totalCount = problems.length;
+  const handleEditResponse = (problem: ProblemItem) => {
+    setEditingResponseId(problem.id);
+    setEditingResponse(problem.rectificationResponse || '');
+  };
+
+  const handleSaveResponse = () => {
+    updateProblem(meetingId, editingResponseId, { rectificationResponse: editingResponse });
+    setEditingResponseId('');
+    setEditingResponse('');
+    Taro.showToast({ title: '保存成功', icon: 'success' });
+  };
 
   const handleSubmit = () => {
-    const unconfirmed = problems.filter(p => p.isClosed === null).length;
+    const unconfirmed = problems.filter(p => p.isRectified === undefined).length;
     
     if (unconfirmed > 0) {
       Taro.showModal({
@@ -69,23 +90,35 @@ const RectificationPage: React.FC = () => {
 
   const doSubmit = () => {
     Taro.showLoading({ title: '提交中...' });
+    
+    const allClosed = problems.length > 0 && problems.every(p => p.isRectified === true);
+    const newStatus = allClosed ? 'pass' : 'modify';
+    
+    updateMeeting(meetingId, {
+      status: newStatus,
+      rectificationExpertOpinion: expertOpinion
+    });
+    
     setTimeout(() => {
       Taro.hideLoading();
       Taro.showToast({ title: '提交成功', icon: 'success' });
       setTimeout(() => {
         Taro.navigateBack();
-      }, 1500);
-    }, 1000);
+      }, 1000);
+    }, 500);
   };
 
   const handleSaveDraft = () => {
+    updateMeeting(meetingId, {
+      rectificationExpertOpinion: expertOpinion
+    });
     Taro.showToast({ title: '保存成功', icon: 'success' });
   };
 
   if (!meeting) {
     return (
       <View className={styles.pageContainer}>
-        <Text>加载中...</Text>
+        <Text style={{ padding: '100rpx', textAlign: 'center', color: '#86909c' }}>未找到该会议信息</Text>
       </View>
     );
   }
@@ -149,6 +182,12 @@ const RectificationPage: React.FC = () => {
               <Text>上传整改材料</Text>
             </View>
           )}
+          {meeting.rectificationMaterials && meeting.rectificationMaterials.length > 0 && (
+            <View className={styles.uploadBtn} onClick={handleUploadMaterial}>
+              <Text className={styles.uploadIcon}>+</Text>
+              <Text>继续上传</Text>
+            </View>
+          )}
         </View>
       </View>
 
@@ -176,26 +215,65 @@ const RectificationPage: React.FC = () => {
               <Text className={styles.expertInfo}>专家：{problem.expertName}</Text>
               
               <View className={styles.responseBox}>
-                <Text className={styles.boxTitle}>
-                  整改回复
-                  {problem.response && <Text className={styles.tag}>已回复</Text>}
-                </Text>
-                <Text className={styles.boxContent}>
-                  {problem.response || '施工单位尚未提交整改回复'}
-                </Text>
+                <View style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text className={styles.boxTitle}>
+                    整改回复
+                    {problem.rectificationResponse && <Text className={styles.tag}>已回复</Text>}
+                  </Text>
+                  <View className={styles.editBtn} onClick={() => handleEditResponse(problem)}>
+                    <Text>编辑</Text>
+                  </View>
+                </View>
+                {editingResponseId === problem.id ? (
+                  <>
+                    <Textarea
+                      value={editingResponse}
+                      onInput={(e) => setEditingResponse(e.detail.value)}
+                      placeholder="请输入整改回复内容..."
+                      style={{
+                        width: '100%',
+                        minHeight: '120rpx',
+                        fontSize: '28rpx',
+                        padding: '16rpx',
+                        background: '#fff',
+                        borderRadius: '8rpx',
+                        marginTop: '16rpx'
+                      }}
+                      autoHeight
+                    />
+                    <View style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16rpx' }}>
+                      <View
+                        style={{
+                          padding: '8rpx 24rpx',
+                          background: '#165dff',
+                          color: '#fff',
+                          borderRadius: '32rpx',
+                          fontSize: '24rpx'
+                        }}
+                        onClick={handleSaveResponse}
+                      >
+                        <Text>保存</Text>
+                      </View>
+                    </View>
+                  </>
+                ) : (
+                  <Text className={styles.boxContent}>
+                    {problem.rectificationResponse || '施工单位尚未提交整改回复'}
+                  </Text>
+                )}
               </View>
               
               <View className={styles.confirmRow}>
                 <Text className={styles.label}>是否闭合</Text>
                 <View className={styles.confirmOptions}>
                   <View
-                    className={`${styles.option} ${styles.yes} ${problem.isClosed === true ? styles.active : ''}`}
+                    className={`${styles.option} ${styles.yes} ${problem.isRectified === true ? styles.active : ''}`}
                     onClick={() => handleConfirm(problem.id, true)}
                   >
                     <Text>✓ 闭合</Text>
                   </View>
                   <View
-                    className={`${styles.option} ${styles.no} ${problem.isClosed === false ? styles.active : ''}`}
+                    className={`${styles.option} ${styles.no} ${problem.isRectified === false ? styles.active : ''}`}
                     onClick={() => handleConfirm(problem.id, false)}
                   >
                     <Text>✕ 未闭合</Text>

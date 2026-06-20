@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, Input, Textarea } from '@tarojs/components';
+import { View, Text, Input } from '@tarojs/components';
 import Taro from '@tarojs/taro';
-import { dangerCategoryMap } from '@/data/mockData';
+import { dangerCategoryMap, defaultReviewItems } from '@/data/mockData';
 import { generateId, getMaterialTypeLabel } from '@/utils';
-import type { DangerCategory, MaterialItem } from '@/types';
+import { useMeetingStore } from '@/store/useMeetingStore';
+import type { DangerCategory, MaterialItem, ParticipantUnit } from '@/types';
 import styles from './index.module.scss';
 
 const categories = [
@@ -19,7 +20,15 @@ const materialTypes = [
   { key: 'review', label: '前期审查意见' }
 ];
 
+const unitRoles = [
+  { key: 'design', label: '设计单位', placeholder: '请输入设计单位名称' },
+  { key: 'construction', label: '施工单位', placeholder: '请输入施工单位名称' },
+  { key: 'supervision', label: '监理单位', placeholder: '请输入监理单位名称' }
+];
+
 const MeetingCreatePage: React.FC = () => {
+  const addMeeting = useMeetingStore(state => state.addMeeting);
+  
   const [formData, setFormData] = useState({
     projectName: '',
     projectCode: '',
@@ -28,15 +37,26 @@ const MeetingCreatePage: React.FC = () => {
     meetingTime: '',
     meetingLocation: '',
     organizer: '',
-    organizerPhone: '',
-    participantUnits: [] as any[],
-    description: ''
+    organizerPhone: ''
+  });
+
+  const [units, setUnits] = useState<Record<string, { name: string; contact: string; phone: string }>>({
+    design: { name: '', contact: '', phone: '' },
+    construction: { name: '', contact: '', phone: '' },
+    supervision: { name: '', contact: '', phone: '' }
   });
 
   const [materials, setMaterials] = useState<MaterialItem[]>([]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleUnitChange = (roleKey: string, field: string, value: string) => {
+    setUnits(prev => ({
+      ...prev,
+      [roleKey]: { ...prev[roleKey], [field]: value }
+    }));
   };
 
   const handleCategorySelect = (key: DangerCategory) => {
@@ -59,13 +79,37 @@ const MeetingCreatePage: React.FC = () => {
     setMaterials(prev => prev.filter(m => m.id !== id));
   };
 
+  const buildParticipantUnits = (): ParticipantUnit[] => {
+    return unitRoles
+      .filter(role => units[role.key].name.trim() !== '')
+      .map(role => ({
+        id: generateId(),
+        name: units[role.key].name,
+        role: role.label,
+        contact: units[role.key].contact || '联系人',
+        phone: units[role.key].phone || '13800138000'
+      }));
+  };
+
+  const buildReviewItems = () => {
+    return defaultReviewItems.map(item => ({
+      ...item,
+      id: generateId(),
+      checked: false
+    }));
+  };
+
   const handleSubmit = () => {
-    if (!formData.projectName) {
+    if (!formData.projectName.trim()) {
       Taro.showToast({ title: '请输入项目名称', icon: 'none' });
       return;
     }
-    if (!formData.dangerName) {
+    if (!formData.dangerName.trim()) {
       Taro.showToast({ title: '请输入危大工程名称', icon: 'none' });
+      return;
+    }
+    if (!formData.meetingTime.trim()) {
+      Taro.showToast({ title: '请选择会议时间', icon: 'none' });
       return;
     }
     
@@ -75,13 +119,36 @@ const MeetingCreatePage: React.FC = () => {
       success: (res) => {
         if (res.confirm) {
           Taro.showLoading({ title: '提交中...' });
+          
+          const participantUnits = buildParticipantUnits();
+          const expertReviewItems = buildReviewItems();
+          
+          const newMeeting = {
+            projectName: formData.projectName,
+            projectCode: formData.projectCode || 'AUTO-' + Date.now(),
+            dangerCategory: formData.dangerCategory,
+            dangerName: formData.dangerName,
+            meetingTime: formData.meetingTime,
+            meetingLocation: formData.meetingLocation || '线上会议',
+            organizer: formData.organizer || '项目管理员',
+            organizerPhone: formData.organizerPhone || '13800138000',
+            status: 'pending' as const,
+            participantUnits,
+            materials,
+            expertReviewItems,
+            problems: [],
+            createTime: new Date().toLocaleString()
+          };
+          
+          addMeeting(newMeeting);
+          
           setTimeout(() => {
             Taro.hideLoading();
             Taro.showToast({ title: '创建成功', icon: 'success' });
             setTimeout(() => {
               Taro.navigateBack();
-            }, 1500);
-          }, 1000);
+            }, 1000);
+          }, 500);
         }
       }
     });
@@ -180,12 +247,11 @@ const MeetingCreatePage: React.FC = () => {
           <View className={styles.inputWrapper}>
             <Input
               className={styles.input}
-              placeholder="请选择会议时间"
+              placeholder="例：2025-07-15 14:00"
               value={formData.meetingTime}
               onInput={(e) => handleInputChange('meetingTime', e.detail.value)}
             />
           </View>
-          <Text className={styles.arrow}>{'>'}</Text>
         </View>
         
         <View className={styles.formItem}>
@@ -229,38 +295,44 @@ const MeetingCreatePage: React.FC = () => {
       <View className={styles.formSection}>
         <Text className={styles.sectionTitle}>参会单位</Text>
         
-        <View className={styles.formItem}>
-          <Text className={styles.label}>设计单位</Text>
-          <View className={styles.inputWrapper}>
-            <Input
-              className={styles.input}
-              placeholder="请输入设计单位名称"
-            />
+        {unitRoles.map(role => (
+          <View key={role.key} className={styles.unitBlock}>
+            <View className={styles.formItem}>
+              <Text className={styles.label}>{role.label}名称</Text>
+              <View className={styles.inputWrapper}>
+                <Input
+                  className={styles.input}
+                  placeholder={role.placeholder}
+                  value={units[role.key].name}
+                  onInput={(e) => handleUnitChange(role.key, 'name', e.detail.value)}
+                />
+              </View>
+            </View>
+            <View className={styles.formItem}>
+              <Text className={styles.label}>联系人</Text>
+              <View className={styles.inputWrapper}>
+                <Input
+                  className={styles.input}
+                  placeholder="请输入联系人姓名"
+                  value={units[role.key].contact}
+                  onInput={(e) => handleUnitChange(role.key, 'contact', e.detail.value)}
+                />
+              </View>
+            </View>
+            <View className={styles.formItem}>
+              <Text className={styles.label}>联系电话</Text>
+              <View className={styles.inputWrapper}>
+                <Input
+                  className={styles.input}
+                  placeholder="请输入联系电话"
+                  type="number"
+                  value={units[role.key].phone}
+                  onInput={(e) => handleUnitChange(role.key, 'phone', e.detail.value)}
+                />
+              </View>
+            </View>
           </View>
-          <Text className={styles.arrow}>{'>'}</Text>
-        </View>
-        
-        <View className={styles.formItem}>
-          <Text className={styles.label}>施工单位</Text>
-          <View className={styles.inputWrapper}>
-            <Input
-              className={styles.input}
-              placeholder="请输入施工单位名称"
-            />
-          </View>
-          <Text className={styles.arrow}>{'>'}</Text>
-        </View>
-        
-        <View className={styles.formItem}>
-          <Text className={styles.label}>监理单位</Text>
-          <View className={styles.inputWrapper}>
-            <Input
-              className={styles.input}
-              placeholder="请输入监理单位名称"
-            />
-          </View>
-          <Text className={styles.arrow}>{'>'}</Text>
-        </View>
+        ))}
       </View>
 
       <View className={styles.formSection}>

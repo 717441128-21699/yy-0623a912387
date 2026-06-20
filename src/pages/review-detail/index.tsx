@@ -2,9 +2,10 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, Textarea, ScrollView } from '@tarojs/components';
 import Taro, { useRouter, useDidShow } from '@tarojs/taro';
 import StatusTag from '@/components/StatusTag';
-import { mockMeetings, severityMap } from '@/data/mockData';
+import { severityMap } from '@/data/mockData';
 import { generateId } from '@/utils';
-import type { Meeting, ExpertReviewItem, ProblemItem, SeverityLevel } from '@/types';
+import { useMeetingStore } from '@/store/useMeetingStore';
+import type { ExpertReviewItem, ProblemItem, SeverityLevel } from '@/types';
 import styles from './index.module.scss';
 
 const categoryIcons: Record<string, string> = {
@@ -16,23 +17,29 @@ const categoryIcons: Record<string, string> = {
 
 const ReviewDetailPage: React.FC = () => {
   const router = useRouter();
-  const [meeting, setMeeting] = useState<Meeting | null>(null);
-  const [reviewItems, setReviewItems] = useState<ExpertReviewItem[]>([]);
-  const [problems, setProblems] = useState<ProblemItem[]>([]);
+  const meetingId = router.params.id || '';
+  
+  const meeting = useMeetingStore(state => 
+    state.meetings.find(m => m.id === meetingId)
+  );
+  const initFromStorage = useMeetingStore(state => state.initFromStorage);
+  const updateReviewItem = useMeetingStore(state => state.updateReviewItem);
+  const addProblem = useMeetingStore(state => state.addProblem);
+  const deleteProblem = useMeetingStore(state => state.deleteProblem);
+  const updateMeeting = useMeetingStore(state => state.updateMeeting);
+  
   const [showAddModal, setShowAddModal] = useState(false);
   const [newProblem, setNewProblem] = useState('');
   const [newSeverity, setNewSeverity] = useState<SeverityLevel>('medium');
   const [currentCategory, setCurrentCategory] = useState('');
 
   useDidShow(() => {
-    const id = router.params.id;
-    const found = mockMeetings.find(m => m.id === id);
-    if (found) {
-      setMeeting(found);
-      setReviewItems([...found.expertReviewItems]);
-      setProblems([...found.problems]);
-    }
+    console.log('[ReviewDetailPage] useDidShow - 刷新数据');
+    initFromStorage();
   });
+
+  const reviewItems: ExpertReviewItem[] = meeting?.expertReviewItems || [];
+  const problems: ProblemItem[] = meeting?.problems || [];
 
   const groupedItems = useMemo(() => {
     const groups: Record<string, ExpertReviewItem[]> = {};
@@ -52,9 +59,10 @@ const ReviewDetailPage: React.FC = () => {
   }, [reviewItems]);
 
   const handleCheckItem = (itemId: string) => {
-    setReviewItems(prev => prev.map(item => 
-      item.id === itemId ? { ...item, checked: !item.checked } : item
-    ));
+    const item = reviewItems.find(i => i.id === itemId);
+    if (item) {
+      updateReviewItem(meetingId, itemId, { checked: !item.checked });
+    }
   };
 
   const handleAddProblem = (category: string) => {
@@ -78,7 +86,7 @@ const ReviewDetailPage: React.FC = () => {
       expertName: '当前专家'
     };
     
-    setProblems(prev => [...prev, problem]);
+    addProblem(meetingId, problem);
     setShowAddModal(false);
     Taro.showToast({ title: '添加成功', icon: 'success' });
   };
@@ -89,13 +97,19 @@ const ReviewDetailPage: React.FC = () => {
       content: '确认删除此问题？',
       success: (res) => {
         if (res.confirm) {
-          setProblems(prev => prev.filter(p => p.id !== id));
+          deleteProblem(meetingId, id);
         }
       }
     });
   };
 
   const handleSave = () => {
+    if (meeting) {
+      updateMeeting(meetingId, {
+        expertReviewItems: [...reviewItems],
+        problems: [...problems]
+      });
+    }
     Taro.showToast({ title: '保存成功', icon: 'success' });
   };
 
@@ -119,19 +133,26 @@ const ReviewDetailPage: React.FC = () => {
 
   const doSubmit = () => {
     Taro.showLoading({ title: '提交中...' });
+    
+    updateMeeting(meetingId, {
+      status: 'reviewing',
+      expertReviewItems: [...reviewItems],
+      problems: [...problems]
+    });
+    
     setTimeout(() => {
       Taro.hideLoading();
       Taro.showToast({ title: '提交成功', icon: 'success' });
       setTimeout(() => {
         Taro.navigateBack();
-      }, 1500);
-    }, 1000);
+      }, 1000);
+    }, 500);
   };
 
   if (!meeting) {
     return (
       <View className={styles.pageContainer}>
-        <Text>加载中...</Text>
+        <Text style={{ padding: '100rpx', textAlign: 'center', color: '#86909c' }}>未找到该会议信息</Text>
       </View>
     );
   }

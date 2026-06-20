@@ -2,33 +2,37 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, Textarea } from '@tarojs/components';
 import Taro, { useRouter, useDidShow } from '@tarojs/taro';
 import StatusTag from '@/components/StatusTag';
-import { mockMeetings, statusMap, severityMap, conclusionMap } from '@/data/mockData';
-import type { Meeting, ProblemItem, ConclusionType } from '@/types';
+import { statusMap, severityMap, conclusionMap } from '@/data/mockData';
+import { useMeetingStore } from '@/store/useMeetingStore';
+import type { ProblemItem, ConclusionType } from '@/types';
 import styles from './index.module.scss';
 
 const MinuteDetailPage: React.FC = () => {
   const router = useRouter();
-  const [meeting, setMeeting] = useState<Meeting | null>(null);
-  const [problems, setProblems] = useState<ProblemItem[]>([]);
-  const [overallConclusion, setOverallConclusion] = useState<ConclusionType | null>(null);
+  const meetingId = router.params.id || '';
+  
+  const meeting = useMeetingStore(state => 
+    state.meetings.find(m => m.id === meetingId)
+  );
+  const initFromStorage = useMeetingStore(state => state.initFromStorage);
+  const updateProblem = useMeetingStore(state => state.updateProblem);
+  const updateMeeting = useMeetingStore(state => state.updateMeeting);
+  const setOverallConclusion = useMeetingStore(state => state.setOverallConclusion);
+  
   const [isEditing, setIsEditing] = useState(false);
   const [editingDiscussion, setEditingDiscussion] = useState('');
   const [editingId, setEditingId] = useState('');
 
   useDidShow(() => {
-    const id = router.params.id;
-    const found = mockMeetings.find(m => m.id === id);
-    if (found) {
-      setMeeting(found);
-      setProblems([...found.problems]);
-      setOverallConclusion(found.conclusion || null);
-    }
+    console.log('[MinuteDetailPage] useDidShow - 刷新数据');
+    initFromStorage();
   });
 
+  const problems: ProblemItem[] = meeting?.problems || [];
+  const overallConclusion = meeting?.conclusion || null;
+
   const handleConclusionChange = (problemId: string, conclusion: ConclusionType) => {
-    setProblems(prev => prev.map(p => 
-      p.id === problemId ? { ...p, conclusion } : p
-    ));
+    updateProblem(meetingId, problemId, { conclusion });
   };
 
   const handleEditDiscussion = (problem: ProblemItem) => {
@@ -38,9 +42,7 @@ const MinuteDetailPage: React.FC = () => {
   };
 
   const handleSaveDiscussion = () => {
-    setProblems(prev => prev.map(p => 
-      p.id === editingId ? { ...p, discussion: editingDiscussion } : p
-    ));
+    updateProblem(meetingId, editingId, { discussion: editingDiscussion });
     setIsEditing(false);
     setEditingId('');
     Taro.showToast({ title: '保存成功', icon: 'success' });
@@ -51,9 +53,7 @@ const MinuteDetailPage: React.FC = () => {
       itemList: ['王强（施工单位）', '李明（设计单位）', '赵伟（监理单位）'],
       success: (res) => {
         const names = ['王强（施工单位）', '李明（设计单位）', '赵伟（监理单位）'];
-        setProblems(prev => prev.map(p => 
-          p.id === problemId ? { ...p, rectificationResponsible: names[res.tapIndex] } : p
-        ));
+        updateProblem(meetingId, problemId, { rectificationResponsible: names[res.tapIndex] });
       }
     });
   };
@@ -63,7 +63,7 @@ const MinuteDetailPage: React.FC = () => {
     setTimeout(() => {
       Taro.hideLoading();
       Taro.showToast({ title: '保存成功', icon: 'success' });
-    }, 1000);
+    }, 500);
   };
 
   const handleSubmit = () => {
@@ -73,13 +73,20 @@ const MinuteDetailPage: React.FC = () => {
       success: (res) => {
         if (res.confirm) {
           Taro.showLoading({ title: '提交中...' });
+          
+          if (overallConclusion) {
+            setOverallConclusion(meetingId, overallConclusion);
+          } else {
+            updateMeeting(meetingId, { status: 'modify' });
+          }
+          
           setTimeout(() => {
             Taro.hideLoading();
             Taro.showToast({ title: '提交成功', icon: 'success' });
             setTimeout(() => {
               Taro.navigateBack();
-            }, 1500);
-          }, 1000);
+            }, 1000);
+          }, 500);
         }
       }
     });
@@ -88,7 +95,7 @@ const MinuteDetailPage: React.FC = () => {
   if (!meeting) {
     return (
       <View className={styles.pageContainer}>
-        <Text>加载中...</Text>
+        <Text style={{ padding: '100rpx', textAlign: 'center', color: '#86909c' }}>未找到该会议信息</Text>
       </View>
     );
   }
@@ -232,7 +239,7 @@ const MinuteDetailPage: React.FC = () => {
             <View
               key={type}
               className={`${styles.option} ${overallConclusion === type ? styles.active : ''}`}
-              onClick={() => setOverallConclusion(type)}
+              onClick={() => setOverallConclusion(meetingId, type)}
             >
               <Text className={styles.optionIcon}>
                 {type === 'pass' ? '✅' : type === 'modify' ? '📝' : '❌'}

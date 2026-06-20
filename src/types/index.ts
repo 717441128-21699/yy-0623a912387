@@ -25,6 +25,7 @@ export interface Meeting {
   rectificationResponsible?: string;
   rectificationDeadline?: string;
   rectificationMaterials?: MaterialItem[];
+  rectificationExpertOpinion?: string;
   createTime: string;
 }
 
@@ -62,6 +63,8 @@ export interface ProblemItem {
   conclusion?: ConclusionType;
   rectificationResponsible?: string;
   isRectified?: boolean;
+  rectificationResponse?: string;
+  expertOpinion?: string;
   expertId?: string;
   expertName?: string;
 }

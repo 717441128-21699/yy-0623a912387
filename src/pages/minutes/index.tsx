@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { View, Text } from '@tarojs/components';
 import Taro, { useDidShow } from '@tarojs/taro';
 import StatusTag from '@/components/StatusTag';
-import { mockMeetings, dangerCategoryMap, statusMap } from '@/data/mockData';
+import { useMeetingStore } from '@/store/useMeetingStore';
+import { dangerCategoryMap, statusMap } from '@/data/mockData';
 import type { Meeting } from '@/types';
 import styles from './index.module.scss';
 
@@ -14,11 +15,14 @@ const tabOptions = [
 ];
 
 const MinutesPage: React.FC = () => {
-  const [meetings, setMeetings] = useState<Meeting[]>(mockMeetings);
+  const meetings = useMeetingStore(state => state.meetings);
+  const initFromStorage = useMeetingStore(state => state.initFromStorage);
+  
   const [activeTab, setActiveTab] = useState<string>('all');
 
   useDidShow(() => {
-    setMeetings([...mockMeetings]);
+    console.log('[MinutesPage] useDidShow - 刷新数据');
+    initFromStorage();
   });
 
   const minuteMeetings = meetings.filter(m => 

@@ -1,21 +1,23 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
 import Taro, { useRouter, useDidShow } from '@tarojs/taro';
-import { mockMeetings, dangerCategoryMap, statusMap } from '@/data/mockData';
+import { useMeetingStore } from '@/store/useMeetingStore';
+import { dangerCategoryMap, statusMap } from '@/data/mockData';
 import { getMaterialTypeLabel } from '@/utils';
-import type { Meeting } from '@/types';
 import styles from './index.module.scss';
 
 const MeetingDetailPage: React.FC = () => {
   const router = useRouter();
-  const [meeting, setMeeting] = useState<Meeting | null>(null);
+  const meetingId = router.params.id || '';
+  
+  const meeting = useMeetingStore(state => 
+    state.meetings.find(m => m.id === meetingId)
+  );
+  const initFromStorage = useMeetingStore(state => state.initFromStorage);
 
   useDidShow(() => {
-    const id = router.params.id;
-    const found = mockMeetings.find(m => m.id === id);
-    if (found) {
-      setMeeting(found);
-    }
+    console.log('[MeetingDetailPage] useDidShow - 刷新数据');
+    initFromStorage();
   });
 
   const getMaterialIcon = (type: string) => {
@@ -47,20 +49,20 @@ const MeetingDetailPage: React.FC = () => {
 
   const handleStartReview = () => {
     Taro.navigateTo({
-      url: `/pages/review-detail/index?id=${meeting?.id}`
+      url: `/pages/review-detail/index?id=${meetingId}`
     });
   };
 
   const handleViewMinutes = () => {
     Taro.navigateTo({
-      url: `/pages/minute-detail/index?id=${meeting?.id}`
+      url: `/pages/minute-detail/index?id=${meetingId}`
     });
   };
 
   if (!meeting) {
     return (
       <View className={styles.pageContainer}>
-        <Text>加载中...</Text>
+        <Text style={{ padding: '100rpx', textAlign: 'center', color: '#86909c' }}>未找到该会议信息</Text>
       </View>
     );
   }

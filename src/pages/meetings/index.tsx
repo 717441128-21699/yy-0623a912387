@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, Input, ScrollView } from '@tarojs/components';
 import Taro, { useDidShow } from '@tarojs/taro';
 import MeetingCard from '@/components/MeetingCard';
-import { mockMeetings } from '@/data/mockData';
-import type { Meeting, MeetingStatus } from '@/types';
+import { useMeetingStore } from '@/store/useMeetingStore';
+import type { MeetingStatus } from '@/types';
 import styles from './index.module.scss';
 
 const filterOptions = [
@@ -16,12 +16,15 @@ const filterOptions = [
 ];
 
 const MeetingsPage: React.FC = () => {
-  const [meetings, setMeetings] = useState<Meeting[]>(mockMeetings);
+  const meetings = useMeetingStore(state => state.meetings);
+  const initFromStorage = useMeetingStore(state => state.initFromStorage);
+  
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [searchText, setSearchText] = useState<string>('');
 
   useDidShow(() => {
-    setMeetings([...mockMeetings]);
+    console.log('[MeetingsPage] useDidShow - 刷新数据');
+    initFromStorage();
   });
 
   const filteredMeetings = meetings.filter(meeting => {
