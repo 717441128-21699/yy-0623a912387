@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, Textarea } from '@tarojs/components';
 import Taro, { useRouter, useDidShow } from '@tarojs/taro';
 import StatusTag from '@/components/StatusTag';
-import { severityMap, conclusionMap } from '@/data/mockData';
+import { severityMap, conclusionMap, getBusinessStatus } from '@/data/mockData';
 import { generateId, getMaterialTypeLabel } from '@/utils';
 import { useMeetingStore } from '@/store/useMeetingStore';
 import type { ProblemItem, MaterialItem } from '@/types';
@@ -34,12 +34,15 @@ const RectificationPage: React.FC = () => {
   });
 
   const problems: ProblemItem[] = meeting?.problems || [];
+  const isArchived = meeting?.rectificationSubmitted === true;
+  const bizStatus = meeting ? getBusinessStatus(meeting) : { label: '', type: '' };
 
   const closedCount = problems.filter(p => p.isRectified === true).length;
-  const pendingCount = problems.filter(p => p.isRectified === undefined || p.isRectified === false).length;
+  const pendingCount = problems.filter(p => p.isRectified !== true).length;
   const totalCount = problems.length;
 
   const handleConfirm = (problemId: string, isClosed: boolean) => {
+    if (isArchived) return;
     setProblemRectified(meetingId, problemId, isClosed);
   };
 
@@ -48,6 +51,7 @@ const RectificationPage: React.FC = () => {
   };
 
   const handleUploadMaterial = () => {
+    if (isArchived) return;
     const newMaterial: Omit<MaterialItem, 'id'> = {
       name: `整改方案_${meeting?.projectName || '项目'}_v2.pdf`,
       type: 'rectification',
@@ -59,6 +63,7 @@ const RectificationPage: React.FC = () => {
   };
 
   const handleEditResponse = (problem: ProblemItem) => {
+    if (isArchived) return;
     setEditingResponseId(problem.id);
     setEditingResponse(problem.rectificationResponse || '');
   };
@@ -96,7 +101,8 @@ const RectificationPage: React.FC = () => {
     
     updateMeeting(meetingId, {
       status: newStatus,
-      rectificationExpertOpinion: expertOpinion
+      rectificationExpertOpinion: expertOpinion,
+      rectificationSubmitted: true
     });
     
     setTimeout(() => {
@@ -128,6 +134,14 @@ const RectificationPage: React.FC = () => {
       <View className={styles.headerCard}>
         <Text className={styles.projectName}>{meeting.projectName}</Text>
         <Text className={styles.dangerName}>{meeting.dangerName}</Text>
+        <View className={styles.statusRow}>
+          <StatusTag text={bizStatus.label} type={bizStatus.type as any} />
+          {isArchived && (
+            <View className={styles.archivedTag}>
+              <Text>📋 已归档</Text>
+            </View>
+          )}
+        </View>
         <View className={styles.infoGrid}>
           <View className={styles.infoItem}>
             <Text className={styles.number}>{totalCount}</Text>
@@ -139,10 +153,20 @@ const RectificationPage: React.FC = () => {
           </View>
           <View className={styles.infoItem}>
             <Text className={styles.number}>{pendingCount}</Text>
-            <Text className={styles.label}>待确认</Text>
+            <Text className={styles.label}>未闭合</Text>
           </View>
         </View>
       </View>
+
+      {isArchived && (
+        <View className={styles.archiveNotice}>
+          <Text className={styles.noticeIcon}>📋</Text>
+          <View className={styles.noticeContent}>
+            <Text className={styles.noticeTitle}>整改确认已归档</Text>
+            <Text className={styles.noticeDesc}>本记录已提交确认意见并归档，内容仅供查阅</Text>
+          </View>
+        </View>
+      )}
 
       <View className={styles.sectionCard}>
         <View className={styles.sectionHeader}>
@@ -177,15 +201,14 @@ const RectificationPage: React.FC = () => {
               </View>
             ))
           ) : (
-            <View className={styles.uploadBtn} onClick={handleUploadMaterial}>
-              <Text className={styles.uploadIcon}>+</Text>
-              <Text>上传整改材料</Text>
+            <View className={styles.noData}>
+              <Text>{isArchived ? '未上传整改材料' : ''}</Text>
             </View>
           )}
-          {meeting.rectificationMaterials && meeting.rectificationMaterials.length > 0 && (
+          {!isArchived && (
             <View className={styles.uploadBtn} onClick={handleUploadMaterial}>
               <Text className={styles.uploadIcon}>+</Text>
-              <Text>继续上传</Text>
+              <Text>{meeting.rectificationMaterials && meeting.rectificationMaterials.length > 0 ? '继续上传' : '上传整改材料'}</Text>
             </View>
           )}
         </View>
@@ -214,15 +237,31 @@ const RectificationPage: React.FC = () => {
               <Text className={styles.problemContent}>{problem.content}</Text>
               <Text className={styles.expertInfo}>专家：{problem.expertName}</Text>
               
+              {problem.discussion && (
+                <View className={styles.discussionBox}>
+                  <Text className={styles.boxTitle}>讨论结论</Text>
+                  <Text className={styles.boxContent}>{problem.discussion}</Text>
+                </View>
+              )}
+              
+              {problem.conclusion && (
+                <View className={styles.conclusionBox}>
+                  <Text className={styles.boxTitle}>论证结论</Text>
+                  <StatusTag text={conclusionMap[problem.conclusion]} type={problem.conclusion as any} />
+                </View>
+              )}
+              
               <View className={styles.responseBox}>
                 <View style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Text className={styles.boxTitle}>
                     整改回复
                     {problem.rectificationResponse && <Text className={styles.tag}>已回复</Text>}
                   </Text>
-                  <View className={styles.editBtn} onClick={() => handleEditResponse(problem)}>
-                    <Text>编辑</Text>
-                  </View>
+                  {!isArchived && (
+                    <View className={styles.editBtn} onClick={() => handleEditResponse(problem)}>
+                      <Text>编辑</Text>
+                    </View>
+                  )}
                 </View>
                 {editingResponseId === problem.id ? (
                   <>
@@ -264,7 +303,7 @@ const RectificationPage: React.FC = () => {
               </View>
               
               <View className={styles.confirmRow}>
-                <Text className={styles.label}>是否闭合</Text>
+                <Text className={styles.label}>闭合状态</Text>
                 <View className={styles.confirmOptions}>
                   <View
                     className={`${styles.option} ${styles.yes} ${problem.isRectified === true ? styles.active : ''}`}
@@ -286,7 +325,9 @@ const RectificationPage: React.FC = () => {
       </View>
 
       <View className={styles.summaryCard}>
-        <Text className={styles.summaryTitle}>整改确认汇总</Text>
+        <Text className={styles.summaryTitle}>
+          {isArchived ? '整改确认归档记录' : '整改确认汇总'}
+        </Text>
         <View className={styles.summaryRow}>
           <Text className={styles.label}>问题总数</Text>
           <Text className={styles.value}>{totalCount} 项</Text>
@@ -307,30 +348,44 @@ const RectificationPage: React.FC = () => {
           <Text className={styles.label}>整改期限</Text>
           <Text className={styles.value}>{meeting.rectificationDeadline || '待确认'}</Text>
         </View>
+        <View className={styles.summaryRow}>
+          <Text className={styles.label}>总体结论</Text>
+          <Text className={styles.value}>
+            {meeting.conclusion ? conclusionMap[meeting.conclusion] : '未设置'}
+          </Text>
+        </View>
         
         <View className={styles.expertInput}>
           <Text className={styles.inputLabel}>专家确认意见</Text>
-          <Textarea
-            className={styles.inputBox}
-            placeholder="请输入专家确认意见..."
-            value={expertOpinion}
-            onInput={(e) => setExpertOpinion(e.detail.value)}
-            maxlength={500}
-            autoHeight
-          />
+          {isArchived ? (
+            <View className={styles.opinionDisplay}>
+              <Text>{meeting.rectificationExpertOpinion || '无'}</Text>
+            </View>
+          ) : (
+            <Textarea
+              className={styles.inputBox}
+              placeholder="请输入专家确认意见..."
+              value={expertOpinion}
+              onInput={(e) => setExpertOpinion(e.detail.value)}
+              maxlength={500}
+              autoHeight
+            />
+          )}
         </View>
       </View>
 
       <View style={{ height: '40rpx' }}></View>
 
-      <View className={styles.bottomBar}>
-        <View className={styles.secondaryBtn} onClick={handleSaveDraft}>
-          <Text>保存草稿</Text>
+      {!isArchived && (
+        <View className={styles.bottomBar}>
+          <View className={styles.secondaryBtn} onClick={handleSaveDraft}>
+            <Text>保存草稿</Text>
+          </View>
+          <View className={styles.primaryBtn} onClick={handleSubmit}>
+            <Text>提交确认意见</Text>
+          </View>
         </View>
-        <View className={styles.primaryBtn} onClick={handleSubmit}>
-          <Text>提交确认意见</Text>
-        </View>
-      </View>
+      )}
     </ScrollView>
   );
 };

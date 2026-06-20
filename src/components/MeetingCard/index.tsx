@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import StatusTag from '@/components/StatusTag';
-import { dangerCategoryMap, statusMap } from '@/data/mockData';
+import { dangerCategoryMap, getBusinessStatus } from '@/data/mockData';
 import type { Meeting } from '@/types';
 import styles from './index.module.scss';
 
@@ -21,12 +21,14 @@ const MeetingCard: React.FC<MeetingCardProps> = ({ meeting, onClick }) => {
       });
     }
   };
+  
+  const bizStatus = getBusinessStatus(meeting);
 
   return (
     <View className={styles.meetingCard} onClick={handleClick}>
       <View className={styles.cardHeader}>
         <Text className={styles.projectName}>{meeting.projectName}</Text>
-        <StatusTag text={statusMap[meeting.status]} type={meeting.status as any} />
+        <StatusTag text={bizStatus.label} type={bizStatus.type as any} />
       </View>
       
       <View className={styles.dangerInfo}>

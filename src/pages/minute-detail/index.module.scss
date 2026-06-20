@@ -296,6 +296,90 @@
   }
 }
 
+.minutesPreviewSection {
+  margin: 0 $page-padding $spacing-lg;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  box-shadow: $shadow-card;
+  
+  .previewToggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $spacing-lg;
+    
+    .previewTitle {
+      font-size: $font-size-md;
+      font-weight: $font-weight-semibold;
+      color: $color-text-primary;
+    }
+    
+    .toggleIcon {
+      font-size: $font-size-sm;
+      color: $color-text-tertiary;
+    }
+  }
+  
+  .previewContent {
+    padding: 0 $spacing-lg $spacing-lg;
+    
+    .previewHeader {
+      text-align: center;
+      padding-bottom: $spacing-md;
+      border-bottom: 2rpx solid $color-divider;
+      margin-bottom: $spacing-md;
+      
+      .previewMainTitle {
+        font-size: $font-size-md;
+        font-weight: $font-weight-bold;
+        color: $color-text-primary;
+      }
+    }
+    
+    .previewBlock {
+      margin-bottom: $spacing-md;
+      
+      .blockTitle {
+        font-size: $font-size-sm;
+        font-weight: $font-weight-semibold;
+        color: $color-text-primary;
+        margin-bottom: $spacing-sm;
+        display: block;
+      }
+      
+      .blockRow {
+        font-size: $font-size-sm;
+        color: $color-text-secondary;
+        line-height: 1.8;
+      }
+    }
+    
+    .previewProblem {
+      padding: $spacing-sm $spacing-md;
+      background: $color-bg-page;
+      border-radius: $radius-md;
+      margin-bottom: $spacing-sm;
+      
+      .previewProblemIndex {
+        font-size: $font-size-sm;
+        color: $color-text-primary;
+        font-weight: $font-weight-medium;
+        line-height: 1.6;
+        display: block;
+        margin-bottom: 4rpx;
+      }
+      
+      .previewProblemDetail {
+        font-size: $font-size-xs;
+        color: $color-text-secondary;
+        line-height: 1.8;
+        display: block;
+      }
+    }
+  }
+}
+
 .bottomBar {
   position: fixed;
   left: 0;

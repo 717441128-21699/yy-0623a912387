@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
 import Taro, { useRouter, useDidShow } from '@tarojs/taro';
 import { useMeetingStore } from '@/store/useMeetingStore';
-import { dangerCategoryMap, statusMap } from '@/data/mockData';
+import { dangerCategoryMap, getBusinessStatus } from '@/data/mockData';
 import { getMaterialTypeLabel } from '@/utils';
 import styles from './index.module.scss';
 
@@ -59,6 +59,12 @@ const MeetingDetailPage: React.FC = () => {
     });
   };
 
+  const handleViewRectification = () => {
+    Taro.navigateTo({
+      url: `/pages/rectification/index?id=${meetingId}`
+    });
+  };
+
   if (!meeting) {
     return (
       <View className={styles.pageContainer}>
@@ -67,6 +73,9 @@ const MeetingDetailPage: React.FC = () => {
     );
   }
 
+  const bizStatus = getBusinessStatus(meeting);
+  const hasRect = meeting.conclusion === 'modify' || meeting.conclusion === 'reject' || meeting.status === 'modify' || !!(meeting.rectificationMaterials && meeting.rectificationMaterials.length > 0) || meeting.rectificationSubmitted === true;
+
   return (
     <ScrollView scrollY className={styles.pageContainer}>
       <View className={styles.headerCard}>
@@ -74,7 +83,7 @@ const MeetingDetailPage: React.FC = () => {
         <Text className={styles.projectCode}>项目编号：{meeting.projectCode}</Text>
         <View className={styles.statusRow}>
           <View className={styles.statusTag}>
-            <Text>{statusMap[meeting.status]}</Text>
+            <Text>{bizStatus.label}</Text>
           </View>
           <View className={styles.categoryTag}>
             <Text>{dangerCategoryMap[meeting.dangerCategory]}</Text>
@@ -196,6 +205,15 @@ const MeetingDetailPage: React.FC = () => {
             </View>
             <View className={styles.primaryBtn} onClick={handleStartReview}>
               <Text>进入预审</Text>
+            </View>
+          </>
+        ) : hasRect ? (
+          <>
+            <View className={styles.secondaryBtn} onClick={handleViewMinutes}>
+              <Text>查看纪要</Text>
+            </View>
+            <View className={styles.primaryBtn} onClick={handleViewRectification}>
+              <Text>查看整改</Text>
             </View>
           </>
         ) : (

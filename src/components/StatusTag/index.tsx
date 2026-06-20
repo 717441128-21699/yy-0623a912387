@@ -5,7 +5,7 @@ import styles from './index.module.scss';
 
 interface StatusTagProps {
   text: string;
-  type?: 'pending' | 'reviewing' | 'pass' | 'modify' | 'reject' | 'light' | 'medium' | 'serious' | 'deep' | 'high' | 'large';
+  type?: 'pending' | 'reviewing' | 'pass' | 'modify' | 'reject' | 'light' | 'medium' | 'serious' | 'deep' | 'high' | 'large' | 'closed' | 'rectifying';
 }
 
 const StatusTag: React.FC<StatusTagProps> = ({ text, type = 'pending' }) => {

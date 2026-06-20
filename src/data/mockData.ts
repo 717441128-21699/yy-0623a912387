@@ -309,6 +309,33 @@ export const statusMap: Record<string, string> = {
   reject: '重新论证'
 };
 
+export const getBusinessStatus = (meeting: Meeting): { label: string; type: string } => {
+  const { status, conclusion, problems, rectificationSubmitted } = meeting;
+  const hasRect = conclusion === 'modify' || conclusion === 'reject' || status === 'modify' || !!(meeting.rectificationMaterials && meeting.rectificationMaterials.length > 0);
+  const closedCount = problems.filter(p => p.isRectified === true).length;
+  const allClosed = problems.length > 0 && closedCount === problems.length;
+  
+  if (rectificationSubmitted && allClosed) {
+    return { label: '已闭环', type: 'closed' };
+  }
+  if (rectificationSubmitted && !allClosed) {
+    return { label: '整改确认中', type: 'rectifying' };
+  }
+  if (hasRect && !rectificationSubmitted) {
+    return { label: '整改中', type: 'modify' };
+  }
+  if (conclusion === 'reject' || status === 'reject') {
+    return { label: '重新论证', type: 'reject' };
+  }
+  if (conclusion === 'pass' && status === 'pass') {
+    return { label: '论证通过', type: 'pass' };
+  }
+  if (status === 'reviewing') {
+    return { label: '预审中', type: 'reviewing' };
+  }
+  return { label: statusMap[status] || '待预审', type: status };
+};
+
 export const severityMap: Record<string, string> = {
   light: '轻微',
   medium: '一般',

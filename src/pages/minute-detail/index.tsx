@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, Textarea } from '@tarojs/components';
 import Taro, { useRouter, useDidShow } from '@tarojs/taro';
 import StatusTag from '@/components/StatusTag';
-import { statusMap, severityMap, conclusionMap } from '@/data/mockData';
+import { statusMap, severityMap, conclusionMap, getBusinessStatus } from '@/data/mockData';
 import { useMeetingStore } from '@/store/useMeetingStore';
 import type { ProblemItem, ConclusionType } from '@/types';
 import styles from './index.module.scss';
@@ -22,6 +22,7 @@ const MinuteDetailPage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editingDiscussion, setEditingDiscussion] = useState('');
   const [editingId, setEditingId] = useState('');
+  const [showMinutesPreview, setShowMinutesPreview] = useState(false);
 
   useDidShow(() => {
     console.log('[MinuteDetailPage] useDidShow - 刷新数据');
@@ -30,6 +31,7 @@ const MinuteDetailPage: React.FC = () => {
 
   const problems: ProblemItem[] = meeting?.problems || [];
   const overallConclusion = meeting?.conclusion || null;
+  const bizStatus = meeting ? getBusinessStatus(meeting) : { label: '', type: '' };
 
   const handleConclusionChange = (problemId: string, conclusion: ConclusionType) => {
     updateProblem(meetingId, problemId, { conclusion });
@@ -107,7 +109,7 @@ const MinuteDetailPage: React.FC = () => {
         <Text className={styles.dangerName}>{meeting.dangerName}</Text>
         <View className={styles.conclusionRow}>
           <Text className={styles.label}>当前状态</Text>
-          <StatusTag text={statusMap[meeting.status]} type={meeting.status as any} />
+          <StatusTag text={bizStatus.label} type={bizStatus.type as any} />
         </View>
       </View>
 
@@ -248,6 +250,106 @@ const MinuteDetailPage: React.FC = () => {
             </View>
           ))}
         </View>
+      </View>
+
+      <View className={styles.minutesPreviewSection}>
+        <View 
+          className={styles.previewToggle}
+          onClick={() => setShowMinutesPreview(!showMinutesPreview)}
+        >
+          <Text className={styles.previewTitle}>📋 会议纪要预览</Text>
+          <Text className={styles.toggleIcon}>{showMinutesPreview ? '▼' : '▶'}</Text>
+        </View>
+        
+        {showMinutesPreview && (
+          <View className={styles.previewContent}>
+            <View className={styles.previewHeader}>
+              <Text className={styles.previewMainTitle}>危大工程专项方案专家论证会议纪要</Text>
+            </View>
+            
+            <View className={styles.previewBlock}>
+              <Text className={styles.blockTitle}>一、工程概况</Text>
+              <View className={styles.blockRow}>
+                <Text>项目名称：{meeting.projectName}</Text>
+              </View>
+              <View className={styles.blockRow}>
+                <Text>项目编号：{meeting.projectCode}</Text>
+              </View>
+              <View className={styles.blockRow}>
+                <Text>危大类别：{meeting.dangerCategory === 'deep' ? '深基坑工程' : meeting.dangerCategory === 'high' ? '高大模板工程' : '大型吊装工程'}</Text>
+              </View>
+              <View className={styles.blockRow}>
+                <Text>工程名称：{meeting.dangerName}</Text>
+              </View>
+            </View>
+
+            <View className={styles.previewBlock}>
+              <Text className={styles.blockTitle}>二、会议信息</Text>
+              <View className={styles.blockRow}>
+                <Text>会议时间：{meeting.meetingTime}</Text>
+              </View>
+              <View className={styles.blockRow}>
+                <Text>会议地点：{meeting.meetingLocation}</Text>
+              </View>
+              <View className={styles.blockRow}>
+                <Text>主持人：{meeting.organizer}</Text>
+              </View>
+              {meeting.participantUnits.length > 0 && (
+                <View className={styles.blockRow}>
+                  <Text>参会单位：{meeting.participantUnits.map(u => u.name).join('、')}</Text>
+                </View>
+              )}
+            </View>
+
+            <View className={styles.previewBlock}>
+              <Text className={styles.blockTitle}>三、问题讨论及论证结论</Text>
+              {problems.map((problem, index) => (
+                <View key={problem.id} className={styles.previewProblem}>
+                  <Text className={styles.previewProblemIndex}>问题{index + 1}：{problem.content}</Text>
+                  <Text className={styles.previewProblemDetail}>
+                    严重程度：{severityMap[problem.severity]} | 提出专家：{problem.expertName}
+                  </Text>
+                  {problem.discussion && (
+                    <Text className={styles.previewProblemDetail}>
+                      讨论结论：{problem.discussion}
+                    </Text>
+                  )}
+                  {problem.conclusion && (
+                    <Text className={styles.previewProblemDetail}>
+                      论证结论：{conclusionMap[problem.conclusion]}
+                    </Text>
+                  )}
+                  {problem.rectificationResponsible && (
+                    <Text className={styles.previewProblemDetail}>
+                      整改责任人：{problem.rectificationResponsible}
+                    </Text>
+                  )}
+                </View>
+              ))}
+            </View>
+
+            <View className={styles.previewBlock}>
+              <Text className={styles.blockTitle}>四、总体论证结论</Text>
+              <Text className={styles.blockRow} style={{ fontWeight: 'bold', color: '#1d2129' }}>
+                {overallConclusion ? conclusionMap[overallConclusion] : '（未设置）'}
+              </Text>
+            </View>
+
+            {meeting.rectificationResponsible && (
+              <View className={styles.previewBlock}>
+                <Text className={styles.blockTitle}>五、整改要求</Text>
+                <View className={styles.blockRow}>
+                  <Text>整改责任人：{meeting.rectificationResponsible}</Text>
+                </View>
+                {meeting.rectificationDeadline && (
+                  <View className={styles.blockRow}>
+                    <Text>整改期限：{meeting.rectificationDeadline}</Text>
+                  </View>
+                )}
+              </View>
+            )}
+          </View>
+        )}
       </View>
 
       <View style={{ height: '40rpx' }}></View>

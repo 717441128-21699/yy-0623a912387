@@ -3,7 +3,7 @@ import { View, Text } from '@tarojs/components';
 import Taro, { useDidShow } from '@tarojs/taro';
 import StatusTag from '@/components/StatusTag';
 import { useMeetingStore } from '@/store/useMeetingStore';
-import { dangerCategoryMap, statusMap } from '@/data/mockData';
+import { dangerCategoryMap, getBusinessStatus } from '@/data/mockData';
 import type { Meeting } from '@/types';
 import styles from './index.module.scss';
 
@@ -11,7 +11,7 @@ const tabOptions = [
   { key: 'all', label: '全部' },
   { key: 'reviewing', label: '预审中' },
   { key: 'rectification', label: '整改中' },
-  { key: 'completed', label: '已闭环' }
+  { key: 'closed', label: '已闭环' }
 ];
 
 const MinutesPage: React.FC = () => {
@@ -30,7 +30,7 @@ const MinutesPage: React.FC = () => {
   );
 
   const hasRectification = (m: Meeting) => {
-    return m.conclusion === 'modify' || m.conclusion === 'reject' || m.status === 'modify' || !!(m.rectificationMaterials && m.rectificationMaterials.length > 0);
+    return m.conclusion === 'modify' || m.conclusion === 'reject' || m.status === 'modify' || !!(m.rectificationMaterials && m.rectificationMaterials.length > 0) || m.rectificationSubmitted === true;
   };
 
   const getClosedCount = (m: Meeting) => {
@@ -44,11 +44,20 @@ const MinutesPage: React.FC = () => {
   const getFilteredMeetings = () => {
     switch (activeTab) {
       case 'reviewing':
-        return minuteMeetings.filter(m => m.status === 'reviewing');
+        return minuteMeetings.filter(m => {
+          const bs = getBusinessStatus(m);
+          return bs.type === 'reviewing';
+        });
       case 'rectification':
-        return minuteMeetings.filter(m => hasRectification(m) && getUnclosedCount(m) > 0);
-      case 'completed':
-        return minuteMeetings.filter(m => hasRectification(m) && getUnclosedCount(m) === 0);
+        return minuteMeetings.filter(m => {
+          const bs = getBusinessStatus(m);
+          return bs.type === 'modify' || bs.type === 'rectifying';
+        });
+      case 'closed':
+        return minuteMeetings.filter(m => {
+          const bs = getBusinessStatus(m);
+          return bs.type === 'closed';
+        });
       default:
         return minuteMeetings;
     }
@@ -58,9 +67,12 @@ const MinutesPage: React.FC = () => {
 
   const stats = {
     total: minuteMeetings.length,
-    reviewing: minuteMeetings.filter(m => m.status === 'reviewing').length,
-    rectification: minuteMeetings.filter(m => hasRectification(m) && getUnclosedCount(m) > 0).length,
-    completed: minuteMeetings.filter(m => hasRectification(m) && getUnclosedCount(m) === 0).length
+    reviewing: minuteMeetings.filter(m => getBusinessStatus(m).type === 'reviewing').length,
+    rectification: minuteMeetings.filter(m => {
+      const t = getBusinessStatus(m).type;
+      return t === 'modify' || t === 'rectifying';
+    }).length,
+    closed: minuteMeetings.filter(m => getBusinessStatus(m).type === 'closed').length
   };
 
   const getSeriousCount = (meeting: Meeting) => {
@@ -111,7 +123,7 @@ const MinutesPage: React.FC = () => {
             <Text className={styles.statLabel}>整改中</Text>
           </View>
           <View className={styles.statItem}>
-            <Text className={styles.statNumber}>{stats.completed}</Text>
+            <Text className={styles.statNumber}>{stats.closed}</Text>
             <Text className={styles.statLabel}>已闭环</Text>
           </View>
           <View className={styles.statItem}>
@@ -144,6 +156,7 @@ const MinutesPage: React.FC = () => {
             const closedCount = getClosedCount(meeting);
             const unclosedCount = getUnclosedCount(meeting);
             const isRect = hasRectification(meeting);
+            const bizStatus = getBusinessStatus(meeting);
             
             return (
               <View
@@ -153,7 +166,7 @@ const MinutesPage: React.FC = () => {
               >
                 <View className={styles.cardHeader}>
                   <Text className={styles.projectName}>{meeting.projectName}</Text>
-                  <StatusTag text={statusMap[meeting.status]} type={meeting.status as any} />
+                  <StatusTag text={bizStatus.label} type={bizStatus.type as any} />
                 </View>
                 
                 <Text className={styles.dangerName}>{meeting.dangerName}</Text>

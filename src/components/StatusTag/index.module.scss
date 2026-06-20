@@ -35,6 +35,16 @@
     color: $color-status-reject;
   }
   
+  &.closed {
+    background: rgba(0, 180, 42, 0.1);
+    color: $color-status-pass;
+  }
+  
+  &.rectifying {
+    background: rgba(114, 46, 209, 0.1);
+    color: $color-status-modify;
+  }
+  
   &.light {
     background: rgba(134, 144, 156, 0.1);
     color: $color-severity-light;
