@@ -1,0 +1,67 @@
+@use '@/styles/variables.scss' as *;
+
+.statusTag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rpx 16rpx;
+  border-radius: $radius-xs;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  white-space: nowrap;
+  
+  &.pending {
+    background: rgba(255, 125, 0, 0.1);
+    color: $color-status-pending;
+  }
+  
+  &.reviewing {
+    background: rgba(22, 93, 255, 0.1);
+    color: $color-status-reviewing;
+  }
+  
+  &.pass {
+    background: rgba(0, 180, 42, 0.1);
+    color: $color-status-pass;
+  }
+  
+  &.modify {
+    background: rgba(114, 46, 209, 0.1);
+    color: $color-status-modify;
+  }
+  
+  &.reject {
+    background: rgba(245, 63, 63, 0.1);
+    color: $color-status-reject;
+  }
+  
+  &.light {
+    background: rgba(134, 144, 156, 0.1);
+    color: $color-severity-light;
+  }
+  
+  &.medium {
+    background: rgba(255, 125, 0, 0.1);
+    color: $color-severity-medium;
+  }
+  
+  &.serious {
+    background: rgba(245, 63, 63, 0.1);
+    color: $color-severity-serious;
+  }
+  
+  &.deep {
+    background: rgba(22, 93, 255, 0.1);
+    color: $color-category-deep;
+  }
+  
+  &.high {
+    background: rgba(114, 46, 209, 0.1);
+    color: $color-category-high;
+  }
+  
+  &.large {
+    background: rgba(15, 198, 194, 0.1);
+    color: $color-category-large;
+  }
+}

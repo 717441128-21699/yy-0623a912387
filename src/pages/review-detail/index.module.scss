@@ -1,0 +1,404 @@
+@use '@/styles/variables.scss' as *;
+
+.pageContainer {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 160rpx;
+}
+
+.headerSection {
+  background: $color-bg-card;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  
+  .projectName {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    color: $color-text-primary;
+    margin-bottom: $spacing-sm;
+  }
+  
+  .dangerName {
+    font-size: $font-size-sm;
+    color: $color-text-secondary;
+    margin-bottom: $spacing-md;
+  }
+  
+  .progressBar {
+    height: 12rpx;
+    background: $color-bg-hover;
+    border-radius: 6rpx;
+    overflow: hidden;
+    margin-bottom: $spacing-sm;
+    
+    .progressFill {
+      height: 100%;
+      background: linear-gradient(90deg, $color-primary 0%, $color-primary-light 100%);
+      border-radius: 6rpx;
+    }
+  }
+  
+  .progressText {
+    font-size: $font-size-xs;
+    color: $color-text-tertiary;
+    text-align: right;
+    
+    .percent {
+      color: $color-primary;
+      font-weight: $font-weight-semibold;
+    }
+  }
+}
+
+.categorySection {
+  background: $color-bg-card;
+  margin-bottom: $spacing-md;
+  
+  .categoryHeader {
+    display: flex;
+    align-items: center;
+    padding: $spacing-lg;
+    padding-bottom: $spacing-md;
+    border-bottom: 1rpx solid $color-divider;
+    
+    .categoryIcon {
+      width: 56rpx;
+      height: 56rpx;
+      border-radius: $radius-md;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28rpx;
+      margin-right: $spacing-sm;
+      background: rgba(22, 93, 255, 0.1);
+    }
+    
+    .categoryName {
+      flex: 1;
+      font-size: $font-size-md;
+      font-weight: $font-weight-semibold;
+      color: $color-text-primary;
+    }
+    
+    .categoryProgress {
+      font-size: $font-size-sm;
+      color: $color-text-tertiary;
+    }
+  }
+  
+  .itemList {
+    padding: 0 $spacing-lg;
+  }
+}
+
+.reviewItem {
+  display: flex;
+  align-items: flex-start;
+  padding: $spacing-md 0;
+  border-bottom: 1rpx solid $color-divider;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+  
+  .checkBox {
+    width: 40rpx;
+    height: 40rpx;
+    border: 2rpx solid $color-border;
+    border-radius: $radius-xs;
+    margin-right: $spacing-md;
+    margin-top: 4rpx;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all $transition-fast;
+    
+    &.checked {
+      background: $color-primary;
+      border-color: $color-primary;
+      
+      .checkIcon {
+        color: $color-text-white;
+        font-size: 24rpx;
+        font-weight: $font-weight-bold;
+      }
+    }
+  }
+  
+  .itemContent {
+    flex: 1;
+    
+    .itemTitle {
+      font-size: $font-size-sm;
+      color: $color-text-primary;
+      line-height: 1.5;
+      margin-bottom: $spacing-xs;
+    }
+    
+    .itemDesc {
+      font-size: $font-size-xs;
+      color: $color-text-tertiary;
+      line-height: 1.5;
+    }
+    
+    .addProblemBtn {
+      display: inline-flex;
+      align-items: center;
+      margin-top: $spacing-sm;
+      font-size: $font-size-xs;
+      color: $color-primary;
+      
+      .plusIcon {
+        margin-right: 4rpx;
+        font-weight: $font-weight-bold;
+      }
+    }
+  }
+}
+
+.problemSection {
+  background: $color-bg-card;
+  margin: 0 $page-padding $spacing-md;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  
+  .sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $spacing-lg;
+    border-bottom: 1rpx solid $color-divider;
+    
+    .sectionTitle {
+      font-size: $font-size-md;
+      font-weight: $font-weight-semibold;
+      color: $color-text-primary;
+    }
+    
+    .problemCount {
+      font-size: $font-size-sm;
+      color: $color-text-tertiary;
+      
+      .num {
+        color: $color-error;
+        font-weight: $font-weight-semibold;
+      }
+    }
+  }
+}
+
+.problemList {
+  padding: $spacing-md $spacing-lg;
+}
+
+.problemItem {
+  display: flex;
+  align-items: flex-start;
+  padding: $spacing-md 0;
+  border-bottom: 1rpx solid $color-divider;
+  
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  
+  .problemContent {
+    flex: 1;
+    
+    .problemText {
+      font-size: $font-size-sm;
+      color: $color-text-primary;
+      line-height: 1.5;
+      margin-bottom: $spacing-xs;
+    }
+    
+    .problemMeta {
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+    }
+  }
+  
+  .deleteBtn {
+    font-size: $font-size-sm;
+    color: $color-text-tertiary;
+    padding: $spacing-xs;
+  }
+}
+
+.addProblemBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-md;
+  margin: 0 $spacing-lg $spacing-lg;
+  border: 2rpx dashed $color-border;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  color: $color-primary;
+  
+  .plusIcon {
+    margin-right: $spacing-xs;
+    font-weight: $font-weight-bold;
+  }
+}
+
+.bottomBar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: $color-bg-card;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc(#{$spacing-md} + env(safe-area-inset-bottom));
+  box-shadow: 0 -2rpx 12rpx rgba(0, 0, 0, 0.05);
+  display: flex;
+  gap: $spacing-md;
+  z-index: 100;
+  
+  .saveBtn {
+    flex: 1;
+    height: $button-height-lg;
+    border-radius: $radius-button;
+    background: $color-bg-page;
+    color: $color-text-secondary;
+    font-size: $font-size-md;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    &:active {
+      opacity: 0.8;
+    }
+  }
+  
+  .submitBtn {
+    flex: 2;
+    height: $button-height-lg;
+    border-radius: $radius-button;
+    background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+    color: $color-text-white;
+    font-size: $font-size-md;
+    font-weight: $font-weight-medium;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    &:active {
+      opacity: 0.9;
+      transform: scale(0.98);
+    }
+  }
+}
+
+.addProblemModal {
+  .modalContent {
+    background: $color-bg-card;
+    border-radius: $radius-lg $radius-lg 0 0;
+    padding: $spacing-lg;
+    
+    .modalTitle {
+      font-size: $font-size-lg;
+      font-weight: $font-weight-semibold;
+      color: $color-text-primary;
+      margin-bottom: $spacing-lg;
+      text-align: center;
+    }
+    
+    .formLabel {
+      font-size: $font-size-sm;
+      color: $color-text-primary;
+      margin-bottom: $spacing-sm;
+      
+      .required {
+        color: $color-error;
+        margin-right: 4rpx;
+      }
+    }
+    
+    .problemInput {
+      width: 100%;
+      min-height: 160rpx;
+      padding: $spacing-md;
+      background: $color-bg-page;
+      border-radius: $radius-md;
+      font-size: $font-size-sm;
+      color: $color-text-primary;
+      line-height: 1.5;
+      margin-bottom: $spacing-lg;
+    }
+    
+    .severityList {
+      display: flex;
+      gap: $spacing-sm;
+      margin-bottom: $spacing-lg;
+      
+      .severityItem {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: $spacing-md 0;
+        border: 2rpx solid $color-border;
+        border-radius: $radius-md;
+        
+        .severityDot {
+          width: 20rpx;
+          height: 20rpx;
+          border-radius: $radius-round;
+          margin-bottom: $spacing-xs;
+          
+          &.light { background: $color-severity-light; }
+          &.medium { background: $color-severity-medium; }
+          &.serious { background: $color-severity-serious; }
+        }
+        
+        .severityLabel {
+          font-size: $font-size-sm;
+          color: $color-text-secondary;
+        }
+        
+        &.active {
+          border-color: $color-primary;
+          background: rgba(22, 93, 255, 0.05);
+          
+          .severityLabel {
+            color: $color-primary;
+            font-weight: $font-weight-medium;
+          }
+        }
+      }
+    }
+    
+    .btnRow {
+      display: flex;
+      gap: $spacing-md;
+      
+      .cancelBtn {
+        flex: 1;
+        height: $button-height-md;
+        border-radius: $radius-button;
+        background: $color-bg-page;
+        color: $color-text-secondary;
+        font-size: $font-size-md;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .confirmBtn {
+        flex: 2;
+        height: $button-height-md;
+        border-radius: $radius-button;
+        background: $color-primary;
+        color: $color-text-white;
+        font-size: $font-size-md;
+        font-weight: $font-weight-medium;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+  }
+}

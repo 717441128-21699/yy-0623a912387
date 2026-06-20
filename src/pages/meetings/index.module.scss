@@ -1,0 +1,145 @@
+@use '@/styles/variables.scss' as *;
+
+.pageContainer {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 120rpx;
+}
+
+.headerSection {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  padding: $spacing-lg;
+  padding-top: 40rpx;
+  padding-bottom: 60rpx;
+  
+  .pageTitle {
+    font-size: $font-size-xxl;
+    font-weight: $font-weight-bold;
+    color: $color-text-white;
+    margin-bottom: $spacing-sm;
+  }
+  
+  .pageSubtitle {
+    font-size: $font-size-sm;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .searchBox {
+    margin-top: $spacing-lg;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: $radius-button;
+    padding: 0 $spacing-lg;
+    height: 72rpx;
+    display: flex;
+    align-items: center;
+    
+    .searchIcon {
+      font-size: $font-size-lg;
+      color: $color-text-tertiary;
+      margin-right: $spacing-sm;
+    }
+    
+    .searchInput {
+      flex: 1;
+      font-size: $font-size-md;
+      color: $color-text-primary;
+      background: transparent;
+    }
+  }
+}
+
+.filterTabs {
+  display: flex;
+  background: $color-bg-card;
+  padding: $spacing-md $spacing-lg;
+  margin: -30rpx $page-padding 0;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  overflow-x: auto;
+  white-space: nowrap;
+  
+  .tabItem {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-sm $spacing-lg;
+    margin-right: $spacing-sm;
+    border-radius: $radius-button;
+    font-size: $font-size-sm;
+    color: $color-text-secondary;
+    transition: all $transition-base;
+    
+    &.active {
+      background: $color-primary;
+      color: $color-text-white;
+      font-weight: $font-weight-medium;
+    }
+    
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+}
+
+.listSection {
+  padding: $spacing-lg $page-padding;
+  
+  .sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $spacing-md;
+    
+    .sectionTitle {
+      font-size: $font-size-lg;
+      font-weight: $font-weight-semibold;
+      color: $color-text-primary;
+    }
+    
+    .count {
+      font-size: $font-size-sm;
+      color: $color-text-tertiary;
+    }
+  }
+  
+  .emptyState {
+    padding: 80rpx 0;
+    text-align: center;
+    
+    .emptyIcon {
+      font-size: 80rpx;
+      margin-bottom: $spacing-md;
+      opacity: 0.3;
+    }
+    
+    .emptyText {
+      font-size: $font-size-md;
+      color: $color-text-tertiary;
+    }
+  }
+}
+
+.fabButton {
+  position: fixed;
+  right: $spacing-lg;
+  bottom: 120rpx;
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: $radius-round;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(22, 93, 255, 0.4);
+  z-index: 100;
+  
+  &:active {
+    transform: scale(0.95);
+  }
+  
+  .fabIcon {
+    font-size: 56rpx;
+    color: $color-text-white;
+    font-weight: $font-weight-light;
+  }
+}

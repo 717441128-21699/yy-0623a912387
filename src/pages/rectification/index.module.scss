@@ -1,0 +1,393 @@
+@use '@/styles/variables.scss' as *;
+
+.pageContainer {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 160rpx;
+}
+
+.headerCard {
+  margin: $spacing-lg $page-padding;
+  background: linear-gradient(135deg, $color-status-modify 0%, lighten($color-status-modify, 15%) 100%);
+  border-radius: $radius-lg;
+  padding: $spacing-xl;
+  color: $color-text-white;
+  
+  .projectName {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    margin-bottom: $spacing-sm;
+    line-height: 1.3;
+  }
+  
+  .dangerName {
+    font-size: $font-size-sm;
+    opacity: 0.9;
+    margin-bottom: $spacing-lg;
+  }
+  
+  .infoGrid {
+    display: flex;
+    gap: $spacing-md;
+    
+    .infoItem {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: $radius-md;
+      padding: $spacing-md;
+      text-align: center;
+      
+      .number {
+        font-size: $font-size-xl;
+        font-weight: $font-weight-bold;
+        line-height: 1.2;
+      }
+      
+      .label {
+        font-size: $font-size-xs;
+        opacity: 0.8;
+        margin-top: 4rpx;
+      }
+    }
+  }
+}
+
+.sectionCard {
+  margin: 0 $page-padding $spacing-lg;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  box-shadow: $shadow-card;
+  
+  .sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $spacing-lg;
+    padding-bottom: $spacing-md;
+    border-bottom: 1rpx solid $color-divider;
+    
+    .sectionTitle {
+      font-size: $font-size-md;
+      font-weight: $font-weight-semibold;
+      color: $color-text-primary;
+      display: flex;
+      align-items: center;
+      
+      .titleIcon {
+        margin-right: $spacing-sm;
+        font-size: $font-size-lg;
+      }
+    }
+    
+    .sectionCount {
+      font-size: $font-size-sm;
+      color: $color-text-tertiary;
+    }
+  }
+}
+
+.materialList {
+  padding: $spacing-md $spacing-lg;
+  
+  .materialItem {
+    display: flex;
+    align-items: center;
+    padding: $spacing-md 0;
+    border-bottom: 1rpx solid $color-divider;
+    
+    &:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    
+    .materialIcon {
+      width: 72rpx;
+      height: 72rpx;
+      border-radius: $radius-md;
+      background: rgba(114, 46, 209, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36rpx;
+      margin-right: $spacing-md;
+    }
+    
+    .materialInfo {
+      flex: 1;
+      
+      .materialName {
+        font-size: $font-size-sm;
+        color: $color-text-primary;
+        font-weight: $font-weight-medium;
+        margin-bottom: 4rpx;
+        @include text-ellipsis;
+      }
+      
+      .materialMeta {
+        font-size: $font-size-xs;
+        color: $color-text-tertiary;
+        
+        .newTag {
+          display: inline-block;
+          padding: 2rpx 10rpx;
+          background: rgba(0, 180, 42, 0.1);
+          color: $color-success;
+          border-radius: $radius-xs;
+          margin-right: $spacing-sm;
+          font-size: 20rpx;
+        }
+      }
+    }
+    
+    .viewBtn {
+      font-size: $font-size-sm;
+      color: $color-primary;
+      padding: $spacing-sm;
+    }
+  }
+  
+  .uploadBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-lg 0;
+    border: 2rpx dashed $color-border;
+    border-radius: $radius-md;
+    margin-top: $spacing-md;
+    font-size: $font-size-sm;
+    color: $color-text-tertiary;
+    
+    .uploadIcon {
+      font-size: $font-size-lg;
+      margin-right: $spacing-sm;
+    }
+  }
+}
+
+.problemList {
+  padding: $spacing-md $spacing-lg;
+}
+
+.problemItem {
+  padding: $spacing-md 0;
+  border-bottom: 1rpx solid $color-divider;
+  
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  
+  .problemHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: $spacing-xs;
+    
+    .index {
+      font-size: $font-size-sm;
+      font-weight: $font-weight-semibold;
+      color: $color-primary;
+      margin-right: $spacing-sm;
+    }
+    
+    .category {
+      flex: 1;
+      font-size: $font-size-xs;
+      color: $color-text-tertiary;
+      background: $color-bg-page;
+      padding: 2rpx 12rpx;
+      border-radius: $radius-xs;
+      display: inline-block;
+    }
+  }
+  
+  .problemContent {
+    font-size: $font-size-sm;
+    color: $color-text-primary;
+    line-height: 1.6;
+    margin-bottom: $spacing-sm;
+  }
+  
+  .expertInfo {
+    font-size: $font-size-xs;
+    color: $color-text-tertiary;
+    margin-bottom: $spacing-md;
+  }
+  
+  .responseBox {
+    background: $color-bg-page;
+    border-radius: $radius-md;
+    padding: $spacing-md;
+    margin-bottom: $spacing-md;
+    
+    .boxTitle {
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      color: $color-text-primary;
+      margin-bottom: $spacing-xs;
+      display: flex;
+      align-items: center;
+      
+      .tag {
+        display: inline-block;
+        padding: 2rpx 10rpx;
+        background: rgba(0, 180, 42, 0.1);
+        color: $color-success;
+        border-radius: $radius-xs;
+        font-size: 20rpx;
+        margin-left: $spacing-sm;
+      }
+    }
+    
+    .boxContent {
+      font-size: $font-size-sm;
+      color: $color-text-secondary;
+      line-height: 1.6;
+    }
+  }
+  
+  .confirmRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: $spacing-md;
+    border-top: 1rpx dashed $color-border;
+    
+    .label {
+      font-size: $font-size-sm;
+      color: $color-text-secondary;
+    }
+    
+    .confirmOptions {
+      display: flex;
+      gap: $spacing-sm;
+      
+      .option {
+        padding: $spacing-xs $spacing-md;
+        border-radius: $radius-button;
+        font-size: $font-size-xs;
+        border: 2rpx solid $color-border;
+        color: $color-text-secondary;
+        
+        &.active {
+          &.yes {
+            background: rgba(0, 180, 42, 0.1);
+            color: $color-success;
+            border-color: $color-success;
+          }
+          
+          &.no {
+            background: rgba(245, 63, 63, 0.1);
+            color: $color-error;
+            border-color: $color-error;
+          }
+        }
+      }
+    }
+  }
+}
+
+.summaryCard {
+  margin: 0 $page-padding $spacing-lg;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  
+  .summaryTitle {
+    font-size: $font-size-md;
+    font-weight: $font-weight-semibold;
+    color: $color-text-primary;
+    margin-bottom: $spacing-md;
+  }
+  
+  .summaryRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: $spacing-sm 0;
+    
+    .label {
+      font-size: $font-size-sm;
+      color: $color-text-secondary;
+    }
+    
+    .value {
+      font-size: $font-size-sm;
+      color: $color-text-primary;
+      font-weight: $font-weight-medium;
+      
+      &.success { color: $color-success; }
+      &.warning { color: $color-warning; }
+      &.error { color: $color-error; }
+    }
+  }
+  
+  .expertInput {
+    margin-top: $spacing-md;
+    
+    .inputLabel {
+      font-size: $font-size-sm;
+      color: $color-text-secondary;
+      margin-bottom: $spacing-sm;
+    }
+    
+    .inputBox {
+      width: 100%;
+      min-height: 120rpx;
+      padding: $spacing-md;
+      background: $color-bg-page;
+      border-radius: $radius-md;
+      font-size: $font-size-sm;
+      color: $color-text-primary;
+      line-height: 1.5;
+    }
+  }
+}
+
+.bottomBar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: $color-bg-card;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc(#{$spacing-md} + env(safe-area-inset-bottom));
+  box-shadow: 0 -2rpx 12rpx rgba(0, 0, 0, 0.05);
+  display: flex;
+  gap: $spacing-md;
+  z-index: 100;
+  
+  .secondaryBtn {
+    flex: 1;
+    height: $button-height-lg;
+    border-radius: $radius-button;
+    background: $color-bg-page;
+    color: $color-text-secondary;
+    font-size: $font-size-md;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    &:active { opacity: 0.8; }
+  }
+  
+  .primaryBtn {
+    flex: 2;
+    height: $button-height-lg;
+    border-radius: $radius-button;
+    background: linear-gradient(135deg, $color-success 0%, darken($color-success, 5%) 100%);
+    color: $color-text-white;
+    font-size: $font-size-md;
+    font-weight: $font-weight-medium;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    &:active {
+      opacity: 0.9;
+      transform: scale(0.98);
+    }
+  }
+}

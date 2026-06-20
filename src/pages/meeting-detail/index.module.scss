@@ -1,0 +1,268 @@
+@use '@/styles/variables.scss' as *;
+
+.pageContainer {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 40rpx;
+}
+
+.headerCard {
+  margin: $spacing-lg $page-padding;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  border-radius: $radius-lg;
+  padding: $spacing-xl;
+  color: $color-text-white;
+  
+  .projectName {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    margin-bottom: $spacing-sm;
+    line-height: 1.3;
+  }
+  
+  .projectCode {
+    font-size: $font-size-sm;
+    opacity: 0.8;
+    margin-bottom: $spacing-md;
+  }
+  
+  .statusRow {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-md;
+    
+    .statusTag {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 4rpx 16rpx;
+      border-radius: $radius-xs;
+      font-size: $font-size-xs;
+    }
+    
+    .categoryTag {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 4rpx 16rpx;
+      border-radius: $radius-xs;
+      font-size: $font-size-xs;
+    }
+  }
+  
+  .dangerName {
+    font-size: $font-size-md;
+    opacity: 0.9;
+    line-height: 1.5;
+  }
+}
+
+.infoSection {
+  margin: 0 $page-padding $spacing-lg;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  box-shadow: $shadow-card;
+  
+  .sectionTitle {
+    padding: $spacing-lg;
+    padding-bottom: $spacing-sm;
+    font-size: $font-size-md;
+    font-weight: $font-weight-semibold;
+    color: $color-text-primary;
+    display: flex;
+    align-items: center;
+    
+    .titleIcon {
+      margin-right: $spacing-sm;
+      font-size: $font-size-lg;
+    }
+  }
+}
+
+.infoItem {
+  display: flex;
+  align-items: flex-start;
+  padding: $spacing-md $spacing-lg;
+  
+  &:last-child {
+    padding-bottom: $spacing-lg;
+  }
+  
+  .label {
+    width: 140rpx;
+    flex-shrink: 0;
+    font-size: $font-size-sm;
+    color: $color-text-tertiary;
+  }
+  
+  .value {
+    flex: 1;
+    font-size: $font-size-sm;
+    color: $color-text-primary;
+    line-height: 1.5;
+  }
+}
+
+.participantList {
+  padding: 0 $spacing-lg $spacing-lg;
+  
+  .participantItem {
+    display: flex;
+    align-items: center;
+    padding: $spacing-md 0;
+    border-bottom: 1rpx solid $color-divider;
+    
+    &:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    
+    .unitIcon {
+      width: 64rpx;
+      height: 64rpx;
+      border-radius: $radius-round;
+      background: rgba(22, 93, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28rpx;
+      margin-right: $spacing-md;
+    }
+    
+    .unitInfo {
+      flex: 1;
+      
+      .unitName {
+        font-size: $font-size-sm;
+        color: $color-text-primary;
+        font-weight: $font-weight-medium;
+        margin-bottom: 4rpx;
+      }
+      
+      .unitMeta {
+        font-size: $font-size-xs;
+        color: $color-text-tertiary;
+        
+        .roleTag {
+          display: inline-block;
+          padding: 2rpx 10rpx;
+          background: $color-bg-page;
+          border-radius: $radius-xs;
+          margin-right: $spacing-sm;
+          color: $color-text-secondary;
+        }
+      }
+    }
+    
+    .phoneBtn {
+      font-size: $font-size-lg;
+      padding: $spacing-sm;
+    }
+  }
+}
+
+.materialList {
+  padding: 0 $spacing-lg $spacing-lg;
+  
+  .materialItem {
+    display: flex;
+    align-items: center;
+    padding: $spacing-md 0;
+    border-bottom: 1rpx solid $color-divider;
+    
+    &:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    
+    .materialIcon {
+      width: 72rpx;
+      height: 72rpx;
+      border-radius: $radius-md;
+      background: $color-bg-page;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36rpx;
+      margin-right: $spacing-md;
+    }
+    
+    .materialInfo {
+      flex: 1;
+      
+      .materialName {
+        font-size: $font-size-sm;
+        color: $color-text-primary;
+        font-weight: $font-weight-medium;
+        margin-bottom: 4rpx;
+        @include text-ellipsis;
+      }
+      
+      .materialMeta {
+        font-size: $font-size-xs;
+        color: $color-text-tertiary;
+        
+        .typeTag {
+          display: inline-block;
+          padding: 2rpx 10rpx;
+          background: rgba(22, 93, 255, 0.1);
+          color: $color-primary;
+          border-radius: $radius-xs;
+          margin-right: $spacing-sm;
+          font-size: 20rpx;
+        }
+      }
+    }
+    
+    .viewBtn {
+      font-size: $font-size-sm;
+      color: $color-primary;
+      padding: $spacing-sm;
+    }
+  }
+}
+
+.actionBar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: $color-bg-card;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc(#{$spacing-md} + env(safe-area-inset-bottom));
+  box-shadow: 0 -2rpx 12rpx rgba(0, 0, 0, 0.05);
+  display: flex;
+  gap: $spacing-md;
+  
+  .secondaryBtn {
+    flex: 1;
+    height: $button-height-lg;
+    border-radius: $radius-button;
+    background: $color-bg-page;
+    color: $color-text-secondary;
+    font-size: $font-size-md;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    &:active {
+      opacity: 0.8;
+    }
+  }
+  
+  .primaryBtn {
+    flex: 2;
+    height: $button-height-lg;
+    border-radius: $radius-button;
+    background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+    color: $color-text-white;
+    font-size: $font-size-md;
+    font-weight: $font-weight-medium;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    &:active {
+      opacity: 0.9;
+      transform: scale(0.98);
+    }
+  }
+}

@@ -1,0 +1,237 @@
+@use '@/styles/variables.scss' as *;
+
+.pageContainer {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 40rpx;
+}
+
+.headerSection {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  padding: $spacing-lg;
+  padding-top: 40rpx;
+  padding-bottom: 60rpx;
+  
+  .pageTitle {
+    font-size: $font-size-xxl;
+    font-weight: $font-weight-bold;
+    color: $color-text-white;
+    margin-bottom: $spacing-sm;
+  }
+  
+  .pageSubtitle {
+    font-size: $font-size-sm;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .statsRow {
+    display: flex;
+    margin-top: $spacing-lg;
+    gap: $spacing-sm;
+    
+    .statItem {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: $radius-md;
+      padding: $spacing-md $spacing-sm;
+      text-align: center;
+      
+      .statNumber {
+        font-size: 40rpx;
+        font-weight: $font-weight-bold;
+        color: $color-text-white;
+        line-height: 1.2;
+      }
+      
+      .statLabel {
+        font-size: 20rpx;
+        color: rgba(255, 255, 255, 0.8);
+        margin-top: 4rpx;
+      }
+    }
+  }
+}
+
+.tabSection {
+  margin: -30rpx $page-padding 0;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-xs;
+  box-shadow: $shadow-card;
+  display: flex;
+  
+  .tabItem {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-md 0;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+    color: $color-text-secondary;
+    transition: all $transition-base;
+    
+    &.active {
+      background: $color-primary;
+      color: $color-text-white;
+      font-weight: $font-weight-medium;
+    }
+  }
+}
+
+.listSection {
+  padding: $spacing-lg $page-padding;
+  
+  .sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $spacing-md;
+    
+    .sectionTitle {
+      font-size: $font-size-lg;
+      font-weight: $font-weight-semibold;
+      color: $color-text-primary;
+    }
+    
+    .count {
+      font-size: $font-size-sm;
+      color: $color-text-tertiary;
+    }
+  }
+}
+
+.minuteCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  
+  &:active {
+    opacity: 0.9;
+  }
+  
+  .cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: $spacing-md;
+    
+    .projectName {
+      flex: 1;
+      font-size: $font-size-md;
+      font-weight: $font-weight-semibold;
+      color: $color-text-primary;
+      @include text-ellipsis;
+      margin-right: $spacing-sm;
+    }
+  }
+  
+  .dangerName {
+    font-size: $font-size-sm;
+    color: $color-text-secondary;
+    margin-bottom: $spacing-md;
+    @include text-ellipsis;
+  }
+  
+  .infoRow {
+    display: flex;
+    align-items: center;
+    margin-bottom: $spacing-xs;
+    font-size: $font-size-xs;
+    color: $color-text-tertiary;
+    
+    .label {
+      width: 100rpx;
+      flex-shrink: 0;
+    }
+    
+    .value {
+      flex: 1;
+      color: $color-text-secondary;
+    }
+  }
+  
+  .problemSummary {
+    display: flex;
+    gap: $spacing-sm;
+    margin-top: $spacing-md;
+    padding-top: $spacing-md;
+    border-top: 1rpx solid $color-divider;
+    
+    .problemItem {
+      flex: 1;
+      text-align: center;
+      padding: $spacing-sm 0;
+      background: $color-bg-page;
+      border-radius: $radius-sm;
+      
+      .count {
+        font-size: $font-size-lg;
+        font-weight: $font-weight-semibold;
+        
+        &.serious { color: $color-error; }
+        &.medium { color: $color-warning; }
+        &.light { color: $color-text-tertiary; }
+      }
+      
+      .label {
+        font-size: $font-size-xs;
+        color: $color-text-tertiary;
+        margin-top: 4rpx;
+      }
+    }
+  }
+  
+  .rectificationInfo {
+    margin-top: $spacing-md;
+    padding: $spacing-md;
+    background: rgba(114, 46, 209, 0.05);
+    border-radius: $radius-md;
+    
+    .infoLine {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: $spacing-xs;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+      
+      .label {
+        font-size: $font-size-xs;
+        color: $color-text-tertiary;
+      }
+      
+      .value {
+        font-size: $font-size-xs;
+        color: $color-text-secondary;
+      }
+    }
+    
+    .deadline {
+      &.urgent {
+        color: $color-error;
+        font-weight: $font-weight-medium;
+      }
+    }
+  }
+}
+
+.emptyState {
+  padding: 80rpx 0;
+  text-align: center;
+  
+  .emptyIcon {
+    font-size: 80rpx;
+    margin-bottom: $spacing-md;
+    opacity: 0.3;
+  }
+  
+  .emptyText {
+    font-size: $font-size-md;
+    color: $color-text-tertiary;
+  }
+}

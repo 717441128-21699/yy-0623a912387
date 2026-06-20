@@ -1,0 +1,81 @@
+@use '@/styles/variables.scss' as *;
+
+.meetingCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  
+  &:active {
+    opacity: 0.9;
+  }
+  
+  .cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: $spacing-md;
+    
+    .projectName {
+      flex: 1;
+      font-size: $font-size-lg;
+      font-weight: $font-weight-semibold;
+      color: $color-text-primary;
+      @include text-ellipsis;
+      margin-right: $spacing-sm;
+    }
+  }
+  
+  .dangerInfo {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-md;
+    
+    .dangerName {
+      font-size: $font-size-sm;
+      color: $color-text-secondary;
+      @include text-ellipsis;
+      flex: 1;
+    }
+  }
+  
+  .infoRow {
+    display: flex;
+    align-items: center;
+    margin-bottom: $spacing-sm;
+    font-size: $font-size-sm;
+    color: $color-text-tertiary;
+    
+    .label {
+      width: 120rpx;
+      flex-shrink: 0;
+    }
+    
+    .value {
+      flex: 1;
+      @include text-ellipsis;
+      color: $color-text-secondary;
+    }
+  }
+  
+  .cardFooter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: $spacing-md;
+    padding-top: $spacing-md;
+    border-top: 1rpx solid $color-divider;
+    
+    .time {
+      font-size: $font-size-xs;
+      color: $color-text-tertiary;
+    }
+    
+    .arrow {
+      font-size: $font-size-sm;
+      color: $color-text-tertiary;
+    }
+  }
+}
