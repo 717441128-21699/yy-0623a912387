@@ -176,6 +176,40 @@
     }
   }
   
+  .problemStatsRow {
+    display: flex;
+    gap: $spacing-md;
+    margin-top: $spacing-md;
+    padding: $spacing-sm $spacing-md;
+    background: $color-bg-page;
+    border-radius: $radius-md;
+    
+    .problemStat {
+      display: flex;
+      align-items: center;
+      gap: 8rpx;
+      
+      .problemStatLabel {
+        font-size: $font-size-xs;
+        color: $color-text-tertiary;
+      }
+      
+      .problemStatNum {
+        font-size: $font-size-md;
+        font-weight: $font-weight-semibold;
+        color: $color-text-primary;
+        
+        &.hasProblem {
+          color: $color-warning;
+        }
+        
+        &.serious {
+          color: $color-error;
+        }
+      }
+    }
+  }
+  
   .materialPreview {
     display: flex;
     gap: $spacing-sm;

@@ -9,9 +9,9 @@ import styles from './index.module.scss';
 
 const tabOptions = [
   { key: 'all', label: '全部' },
-  { key: 'pending', label: '待会议' },
+  { key: 'reviewing', label: '预审中' },
   { key: 'rectification', label: '整改中' },
-  { key: 'completed', label: '已完成' }
+  { key: 'completed', label: '已闭环' }
 ];
 
 const MinutesPage: React.FC = () => {
@@ -29,14 +29,26 @@ const MinutesPage: React.FC = () => {
     m.status !== 'pending' && m.problems.length > 0
   );
 
+  const hasRectification = (m: Meeting) => {
+    return m.conclusion === 'modify' || m.conclusion === 'reject' || m.status === 'modify' || !!(m.rectificationMaterials && m.rectificationMaterials.length > 0);
+  };
+
+  const getClosedCount = (m: Meeting) => {
+    return m.problems.filter(p => p.isRectified === true).length;
+  };
+
+  const getUnclosedCount = (m: Meeting) => {
+    return m.problems.filter(p => p.isRectified !== true).length;
+  };
+
   const getFilteredMeetings = () => {
     switch (activeTab) {
-      case 'pending':
-        return meetings.filter(m => m.status === 'reviewing');
+      case 'reviewing':
+        return minuteMeetings.filter(m => m.status === 'reviewing');
       case 'rectification':
-        return meetings.filter(m => m.status === 'modify' && !m.rectificationMaterials);
+        return minuteMeetings.filter(m => hasRectification(m) && getUnclosedCount(m) > 0);
       case 'completed':
-        return meetings.filter(m => m.status === 'pass' || (m.status === 'modify' && m.rectificationMaterials));
+        return minuteMeetings.filter(m => hasRectification(m) && getUnclosedCount(m) === 0);
       default:
         return minuteMeetings;
     }
@@ -46,9 +58,9 @@ const MinutesPage: React.FC = () => {
 
   const stats = {
     total: minuteMeetings.length,
-    pending: meetings.filter(m => m.status === 'reviewing').length,
-    rectification: meetings.filter(m => m.status === 'modify' && !m.rectificationMaterials).length,
-    completed: meetings.filter(m => m.status === 'pass' || (m.status === 'modify' && m.rectificationMaterials)).length
+    reviewing: minuteMeetings.filter(m => m.status === 'reviewing').length,
+    rectification: minuteMeetings.filter(m => hasRectification(m) && getUnclosedCount(m) > 0).length,
+    completed: minuteMeetings.filter(m => hasRectification(m) && getUnclosedCount(m) === 0).length
   };
 
   const getSeriousCount = (meeting: Meeting) => {
@@ -63,14 +75,14 @@ const MinutesPage: React.FC = () => {
     return meeting.problems.filter(p => p.severity === 'light').length;
   };
 
-  const handleCardClick = (id: string, status: string) => {
-    if (status === 'modify') {
+  const handleCardClick = (meeting: Meeting) => {
+    if (hasRectification(meeting)) {
       Taro.navigateTo({
-        url: `/pages/rectification/index?id=${id}`
+        url: `/pages/rectification/index?id=${meeting.id}`
       });
     } else {
       Taro.navigateTo({
-        url: `/pages/minute-detail/index?id=${id}`
+        url: `/pages/minute-detail/index?id=${meeting.id}`
       });
     }
   };
@@ -103,8 +115,8 @@ const MinutesPage: React.FC = () => {
             <Text className={styles.statLabel}>已闭环</Text>
           </View>
           <View className={styles.statItem}>
-            <Text className={styles.statNumber}>{stats.pending}</Text>
-            <Text className={styles.statLabel}>待会议</Text>
+            <Text className={styles.statNumber}>{stats.reviewing}</Text>
+            <Text className={styles.statLabel}>预审中</Text>
           </View>
         </View>
       </View>
@@ -128,63 +140,96 @@ const MinutesPage: React.FC = () => {
         </View>
         
         {filteredMeetings.length > 0 ? (
-          filteredMeetings.map(meeting => (
-            <View
-              key={meeting.id}
-              className={styles.minuteCard}
-              onClick={() => handleCardClick(meeting.id, meeting.status)}
-            >
-              <View className={styles.cardHeader}>
-                <Text className={styles.projectName}>{meeting.projectName}</Text>
-                <StatusTag text={statusMap[meeting.status]} type={meeting.status as any} />
-              </View>
-              
-              <Text className={styles.dangerName}>{meeting.dangerName}</Text>
-              
-              <View className={styles.infoRow}>
-                <Text className={styles.label}>会议时间</Text>
-                <Text className={styles.value}>{meeting.meetingTime}</Text>
-              </View>
-              
-              <View className={styles.infoRow}>
-                <Text className={styles.label}>问题数量</Text>
-                <Text className={styles.value}>{meeting.problems.length} 项</Text>
-              </View>
-              
-              {meeting.problems.length > 0 && (
-                <View className={styles.problemSummary}>
-                  <View className={styles.problemItem}>
-                    <Text className={`${styles.count} ${styles.serious}`}>{getSeriousCount(meeting)}</Text>
-                    <Text className={styles.label}>严重</Text>
-                  </View>
-                  <View className={styles.problemItem}>
-                    <Text className={`${styles.count} ${styles.medium}`}>{getMediumCount(meeting)}</Text>
-                    <Text className={styles.label}>一般</Text>
-                  </View>
-                  <View className={styles.problemItem}>
-                    <Text className={`${styles.count} ${styles.light}`}>{getLightCount(meeting)}</Text>
-                    <Text className={styles.label}>轻微</Text>
-                  </View>
+          filteredMeetings.map(meeting => {
+            const closedCount = getClosedCount(meeting);
+            const unclosedCount = getUnclosedCount(meeting);
+            const isRect = hasRectification(meeting);
+            
+            return (
+              <View
+                key={meeting.id}
+                className={styles.minuteCard}
+                onClick={() => handleCardClick(meeting)}
+              >
+                <View className={styles.cardHeader}>
+                  <Text className={styles.projectName}>{meeting.projectName}</Text>
+                  <StatusTag text={statusMap[meeting.status]} type={meeting.status as any} />
                 </View>
-              )}
-              
-              {meeting.status === 'modify' && meeting.rectificationDeadline && (
-                <View className={styles.rectificationInfo}>
-                  <View className={styles.infoLine}>
-                    <Text className={styles.label}>整改责任人</Text>
-                    <Text className={styles.value}>{meeting.rectificationResponsible}</Text>
-                  </View>
-                  <View className={styles.infoLine}>
-                    <Text className={styles.label}>整改期限</Text>
-                    <Text className={`${styles.value} ${styles.deadline} ${isUrgent(meeting.rectificationDeadline) ? styles.urgent : ''}`}>
-                      {meeting.rectificationDeadline}
-                      {isUrgent(meeting.rectificationDeadline) && ' (临近)'}
-                    </Text>
-                  </View>
+                
+                <Text className={styles.dangerName}>{meeting.dangerName}</Text>
+                
+                <View className={styles.infoRow}>
+                  <Text className={styles.label}>会议时间</Text>
+                  <Text className={styles.value}>{meeting.meetingTime}</Text>
                 </View>
-              )}
-            </View>
-          ))
+                
+                <View className={styles.infoRow}>
+                  <Text className={styles.label}>问题数量</Text>
+                  <Text className={styles.value}>{meeting.problems.length} 项</Text>
+                </View>
+                
+                {meeting.problems.length > 0 && (
+                  <View className={styles.problemSummary}>
+                    <View className={styles.problemItem}>
+                      <Text className={`${styles.count} ${styles.serious}`}>{getSeriousCount(meeting)}</Text>
+                      <Text className={styles.label}>严重</Text>
+                    </View>
+                    <View className={styles.problemItem}>
+                      <Text className={`${styles.count} ${styles.medium}`}>{getMediumCount(meeting)}</Text>
+                      <Text className={styles.label}>一般</Text>
+                    </View>
+                    <View className={styles.problemItem}>
+                      <Text className={`${styles.count} ${styles.light}`}>{getLightCount(meeting)}</Text>
+                      <Text className={styles.label}>轻微</Text>
+                    </View>
+                  </View>
+                )}
+                
+                {isRect && (
+                  <View className={styles.rectificationProgress}>
+                    <View className={styles.progressHeader}>
+                      <Text className={styles.progressTitle}>闭环进度</Text>
+                      <Text className={styles.progressPercent}>
+                        {meeting.problems.length > 0 ? Math.round((closedCount / meeting.problems.length) * 100) : 0}%
+                      </Text>
+                    </View>
+                    <View className={styles.progressBar}>
+                      <View 
+                        className={styles.progressFill} 
+                        style={{ width: `${meeting.problems.length > 0 ? Math.round((closedCount / meeting.problems.length) * 100) : 0}%` }}
+                      ></View>
+                    </View>
+                    <View className={styles.progressStats}>
+                      <View className={styles.progressStat}>
+                        <Text className={styles.statDotClosed}></Text>
+                        <Text className={styles.statText}>已闭合 {closedCount} 项</Text>
+                      </View>
+                      <View className={styles.progressStat}>
+                        <Text className={styles.statDotUnclosed}></Text>
+                        <Text className={styles.statText}>未闭合 {unclosedCount} 项</Text>
+                      </View>
+                    </View>
+                  </View>
+                )}
+                
+                {isRect && meeting.rectificationDeadline && (
+                  <View className={styles.rectificationInfo}>
+                    <View className={styles.infoLine}>
+                      <Text className={styles.label}>整改责任人</Text>
+                      <Text className={styles.value}>{meeting.rectificationResponsible || '待确认'}</Text>
+                    </View>
+                    <View className={styles.infoLine}>
+                      <Text className={styles.label}>整改期限</Text>
+                      <Text className={`${styles.value} ${styles.deadline} ${isUrgent(meeting.rectificationDeadline) ? styles.urgent : ''}`}>
+                        {meeting.rectificationDeadline}
+                        {isUrgent(meeting.rectificationDeadline) && ' (临近)'}
+                      </Text>
+                    </View>
+                  </View>
+                )}
+              </View>
+            );
+          })
         ) : (
           <View className={styles.emptyState}>
             <Text className={styles.emptyIcon}>📝</Text>

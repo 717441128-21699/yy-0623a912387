@@ -3,7 +3,7 @@ import { View, Text, ScrollView } from '@tarojs/components';
 import Taro, { useDidShow } from '@tarojs/taro';
 import StatusTag from '@/components/StatusTag';
 import { useMeetingStore } from '@/store/useMeetingStore';
-import { dangerCategoryMap } from '@/data/mockData';
+import { dangerCategoryMap, severityMap } from '@/data/mockData';
 import type { Meeting } from '@/types';
 import styles from './index.module.scss';
 
@@ -47,6 +47,14 @@ const PreReviewPage: React.FC = () => {
 
   const getCheckedCount = (meeting: Meeting) => {
     return meeting.expertReviewItems.filter(item => item.checked).length;
+  };
+
+  const getProblemCount = (meeting: Meeting) => {
+    return meeting.problems.length;
+  };
+
+  const getSeriousProblemCount = (meeting: Meeting) => {
+    return meeting.problems.filter(p => p.severity === 'serious').length;
   };
 
   const getMaterialCount = (meeting: Meeting) => {
@@ -116,6 +124,8 @@ const PreReviewPage: React.FC = () => {
             const progress = getReviewProgress(meeting);
             const checkedCount = getCheckedCount(meeting);
             const totalCount = meeting.expertReviewItems.length;
+            const problemCount = getProblemCount(meeting);
+            const seriousCount = getSeriousProblemCount(meeting);
             
             return (
               <View
@@ -137,6 +147,25 @@ const PreReviewPage: React.FC = () => {
                 <View className={styles.progressInfo}>
                   <Text className={styles.progressText}>已审查 {checkedCount}/{totalCount} 项</Text>
                   <Text className={styles.progressPercent}>{progress}%</Text>
+                </View>
+                
+                <View className={styles.problemStatsRow}>
+                  <View className={styles.problemStat}>
+                    <Text className={styles.problemStatLabel}>发现问题</Text>
+                    <Text className={`${styles.problemStatNum} ${problemCount > 0 ? styles.hasProblem : ''}`}>{problemCount}</Text>
+                  </View>
+                  {problemCount > 0 && (
+                    <>
+                      <View className={styles.problemStat}>
+                        <Text className={styles.problemStatLabel}>严重</Text>
+                        <Text className={`${styles.problemStatNum} ${seriousCount > 0 ? styles.serious : ''}`}>{seriousCount}</Text>
+                      </View>
+                      <View className={styles.problemStat}>
+                        <Text className={styles.problemStatLabel}>一般/轻微</Text>
+                        <Text className={styles.problemStatNum}>{problemCount - seriousCount}</Text>
+                      </View>
+                    </>
+                  )}
                 </View>
                 
                 <View className={styles.materialPreview}>

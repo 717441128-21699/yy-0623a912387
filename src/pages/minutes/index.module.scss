@@ -184,6 +184,77 @@
     }
   }
   
+  .rectificationProgress {
+    margin-top: $spacing-md;
+    padding: $spacing-md;
+    background: rgba(22, 93, 255, 0.04);
+    border-radius: $radius-md;
+    
+    .progressHeader {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: $spacing-sm;
+      
+      .progressTitle {
+        font-size: $font-size-xs;
+        color: $color-text-secondary;
+        font-weight: $font-weight-medium;
+      }
+      
+      .progressPercent {
+        font-size: $font-size-sm;
+        font-weight: $font-weight-semibold;
+        color: $color-primary;
+      }
+    }
+    
+    .progressBar {
+      height: 12rpx;
+      background: $color-bg-hover;
+      border-radius: 6rpx;
+      overflow: hidden;
+      margin-bottom: $spacing-sm;
+      
+      .progressFill {
+        height: 100%;
+        background: linear-gradient(90deg, $color-success 0%, #52c41a 100%);
+        border-radius: 6rpx;
+        transition: width $transition-base;
+      }
+    }
+    
+    .progressStats {
+      display: flex;
+      gap: $spacing-lg;
+      
+      .progressStat {
+        display: flex;
+        align-items: center;
+        gap: 8rpx;
+        
+        .statDotClosed {
+          width: 16rpx;
+          height: 16rpx;
+          border-radius: 50%;
+          background: $color-success;
+        }
+        
+        .statDotUnclosed {
+          width: 16rpx;
+          height: 16rpx;
+          border-radius: 50%;
+          background: $color-warning;
+        }
+        
+        .statText {
+          font-size: $font-size-xs;
+          color: $color-text-secondary;
+        }
+      }
+    }
+  }
+  
   .rectificationInfo {
     margin-top: $spacing-md;
     padding: $spacing-md;
