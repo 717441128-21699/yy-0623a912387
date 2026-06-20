@@ -37,7 +37,7 @@
       text-align: center;
       
       .statNumber {
-        font-size: 48rpx;
+        font-size: 40rpx;
         font-weight: $font-weight-bold;
         color: $color-text-white;
         line-height: 1.2;
@@ -50,6 +50,36 @@
       }
     }
   }
+  
+  .statsRowSecond {
+    display: flex;
+    margin-top: $spacing-sm;
+    gap: $spacing-md;
+    
+    .statItemSmall {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: $radius-md;
+      padding: $spacing-sm $spacing-md;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: $spacing-sm;
+      
+      .statNumberSmall {
+        font-size: $font-size-md;
+        font-weight: $font-weight-bold;
+        color: $color-text-white;
+        line-height: 1.2;
+      }
+      
+      .statLabelSmall {
+        font-size: $font-size-xs;
+        color: rgba(255, 255, 255, 0.8);
+      }
+    }
+  }
 }
 
 .filterSection {
@@ -59,8 +89,23 @@
   padding: $spacing-md;
   box-shadow: $shadow-card;
   
+  .searchRow {
+    margin-bottom: $spacing-sm;
+    
+    .searchInput {
+      width: 100%;
+      height: 64rpx;
+      background: $color-bg-page;
+      border-radius: $radius-md;
+      padding: 0 $spacing-md;
+      font-size: $font-size-sm;
+      color: $color-text-primary;
+    }
+  }
+  
   .filterRow {
     display: flex;
+    flex-wrap: wrap;
     gap: $spacing-sm;
     margin-bottom: $spacing-sm;
     
@@ -69,13 +114,9 @@
     }
     
     .filterItem {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: $spacing-sm 0;
+      padding: $spacing-xs $spacing-md;
       border-radius: $radius-md;
-      font-size: $font-size-sm;
+      font-size: $font-size-xs;
       color: $color-text-secondary;
       background: $color-bg-page;
       
@@ -125,7 +166,7 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: $spacing-md;
+    margin-bottom: $spacing-sm;
     
     .projectName {
       flex: 1;
@@ -135,13 +176,25 @@
       @include text-ellipsis;
       margin-right: $spacing-sm;
     }
+    
+    .cardTags {
+      display: flex;
+      align-items: center;
+      gap: $spacing-xs;
+    }
   }
   
-  .dangerName {
-    font-size: $font-size-sm;
-    color: $color-text-secondary;
+  .cardSubHeader {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
     margin-bottom: $spacing-md;
-    @include text-ellipsis;
+    
+    .dangerName {
+      font-size: $font-size-sm;
+      color: $color-text-secondary;
+      @include text-ellipsis;
+    }
   }
   
   .progressBar {

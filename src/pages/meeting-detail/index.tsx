@@ -74,7 +74,7 @@ const MeetingDetailPage: React.FC = () => {
   }
 
   const bizStatus = getBusinessStatus(meeting);
-  const hasRect = meeting.conclusion === 'modify' || meeting.conclusion === 'reject' || meeting.status === 'modify' || !!(meeting.rectificationMaterials && meeting.rectificationMaterials.length > 0) || meeting.rectificationSubmitted === true;
+  const hasRect = bizStatus.type !== 'reject' && (meeting.conclusion === 'modify' || meeting.status === 'modify' || !!(meeting.rectificationMaterials && meeting.rectificationMaterials.length > 0) || meeting.rectificationSubmitted === true);
 
   return (
     <ScrollView scrollY className={styles.pageContainer}>

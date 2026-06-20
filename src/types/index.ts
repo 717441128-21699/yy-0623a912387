@@ -27,6 +27,7 @@ export interface Meeting {
   rectificationMaterials?: MaterialItem[];
   rectificationExpertOpinion?: string;
   rectificationSubmitted?: boolean;
+  rectificationSubmitTime?: string;
   createTime: string;
 }
 

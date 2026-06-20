@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView } from '@tarojs/components';
+import { View, Text, ScrollView, Input } from '@tarojs/components';
 import Taro, { useDidShow } from '@tarojs/taro';
 import StatusTag from '@/components/StatusTag';
 import { useMeetingStore } from '@/store/useMeetingStore';
-import { dangerCategoryMap, severityMap } from '@/data/mockData';
+import { dangerCategoryMap, severityMap, getBusinessStatus } from '@/data/mockData';
 import type { Meeting } from '@/types';
 import styles from './index.module.scss';
 
 const statusFilters = [
   { key: 'all', label: '全部' },
   { key: 'pending', label: '待预审' },
-  { key: 'reviewing', label: '预审中' }
+  { key: 'reviewing', label: '预审中' },
+  { key: 'modify', label: '整改中' },
+  { key: 'closed', label: '已闭环' },
+  { key: 'reject', label: '重新论证' }
 ];
 
 const PreReviewPage: React.FC = () => {
@@ -18,25 +21,53 @@ const PreReviewPage: React.FC = () => {
   const initFromStorage = useMeetingStore(state => state.initFromStorage);
   
   const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [searchKeyword, setSearchKeyword] = useState('');
 
   useDidShow(() => {
     console.log('[PreReviewPage] useDidShow - 刷新数据');
     initFromStorage();
   });
 
-  const reviewMeetings = meetings.filter(m => 
-    m.status === 'pending' || m.status === 'reviewing'
-  );
+  const getFilteredMeetings = () => {
+    let result = meetings;
+    
+    if (activeFilter !== 'all') {
+      result = result.filter(m => {
+        const bs = getBusinessStatus(m);
+        if (activeFilter === 'pending') return m.status === 'pending' && bs.type === 'pending';
+        if (activeFilter === 'reviewing') return bs.type === 'reviewing';
+        if (activeFilter === 'modify') return bs.type === 'modify' || bs.type === 'rectifying';
+        if (activeFilter === 'closed') return bs.type === 'closed';
+        if (activeFilter === 'reject') return bs.type === 'reject';
+        if (activeFilter === 'pass') return bs.type === 'pass';
+        return true;
+      });
+    }
+    
+    if (searchKeyword.trim()) {
+      const kw = searchKeyword.trim().toLowerCase();
+      result = result.filter(m => 
+        m.projectName.toLowerCase().includes(kw) ||
+        m.projectCode.toLowerCase().includes(kw) ||
+        m.dangerName.toLowerCase().includes(kw)
+      );
+    }
+    
+    return result;
+  };
 
-  const filteredMeetings = reviewMeetings.filter(meeting => {
-    if (activeFilter === 'all') return true;
-    return meeting.status === activeFilter;
-  });
+  const filteredMeetings = getFilteredMeetings();
 
   const stats = {
-    total: reviewMeetings.length,
-    pending: reviewMeetings.filter(m => m.status === 'pending').length,
-    reviewing: reviewMeetings.filter(m => m.status === 'reviewing').length
+    total: meetings.length,
+    pending: meetings.filter(m => m.status === 'pending' && getBusinessStatus(m).type === 'pending').length,
+    reviewing: meetings.filter(m => getBusinessStatus(m).type === 'reviewing').length,
+    rectification: meetings.filter(m => {
+      const t = getBusinessStatus(m).type;
+      return t === 'modify' || t === 'rectifying';
+    }).length,
+    closed: meetings.filter(m => getBusinessStatus(m).type === 'closed').length,
+    reject: meetings.filter(m => getBusinessStatus(m).type === 'reject').length
   };
 
   const getReviewProgress = (meeting: Meeting) => {
@@ -61,10 +92,25 @@ const PreReviewPage: React.FC = () => {
     return meeting.materials.length;
   };
 
-  const handleCardClick = (id: string) => {
-    Taro.navigateTo({
-      url: `/pages/review-detail/index?id=${id}`
-    });
+  const handleCardClick = (meeting: Meeting) => {
+    const bs = getBusinessStatus(meeting);
+    if (bs.type === 'closed' && meeting.rectificationSubmitted) {
+      Taro.navigateTo({
+        url: `/pages/rectification/index?id=${meeting.id}`
+      });
+    } else if (bs.type === 'modify' || bs.type === 'rectifying') {
+      Taro.navigateTo({
+        url: `/pages/rectification/index?id=${meeting.id}`
+      });
+    } else if (bs.type === 'reject') {
+      Taro.navigateTo({
+        url: `/pages/minute-detail/index?id=${meeting.id}`
+      });
+    } else {
+      Taro.navigateTo({
+        url: `/pages/review-detail/index?id=${meeting.id}`
+      });
+    }
   };
 
   const getMaterialTypeIcon = (type: string) => {
@@ -86,20 +132,42 @@ const PreReviewPage: React.FC = () => {
         <View className={styles.statsRow}>
           <View className={styles.statItem}>
             <Text className={styles.statNumber}>{stats.total}</Text>
-            <Text className={styles.statLabel}>待预审项目</Text>
+            <Text className={styles.statLabel}>项目总数</Text>
           </View>
           <View className={styles.statItem}>
             <Text className={styles.statNumber}>{stats.pending}</Text>
-            <Text className={styles.statLabel}>未开始</Text>
+            <Text className={styles.statLabel}>待预审</Text>
           </View>
           <View className={styles.statItem}>
             <Text className={styles.statNumber}>{stats.reviewing}</Text>
             <Text className={styles.statLabel}>预审中</Text>
           </View>
+          <View className={styles.statItem}>
+            <Text className={styles.statNumber}>{stats.rectification}</Text>
+            <Text className={styles.statLabel}>整改中</Text>
+          </View>
+        </View>
+        <View className={styles.statsRowSecond}>
+          <View className={styles.statItemSmall}>
+            <Text className={styles.statNumberSmall}>{stats.closed}</Text>
+            <Text className={styles.statLabelSmall}>已闭环</Text>
+          </View>
+          <View className={styles.statItemSmall}>
+            <Text className={styles.statNumberSmall}>{stats.reject}</Text>
+            <Text className={styles.statLabelSmall}>重新论证</Text>
+          </View>
         </View>
       </View>
 
       <View className={styles.filterSection}>
+        <View className={styles.searchRow}>
+          <Input
+            className={styles.searchInput}
+            placeholder="搜索项目编号或名称"
+            value={searchKeyword}
+            onInput={(e) => setSearchKeyword(e.detail.value)}
+          />
+        </View>
         <View className={styles.filterRow}>
           {statusFilters.map(item => (
             <View
@@ -126,19 +194,25 @@ const PreReviewPage: React.FC = () => {
             const totalCount = meeting.expertReviewItems.length;
             const problemCount = getProblemCount(meeting);
             const seriousCount = getSeriousProblemCount(meeting);
+            const bizStatus = getBusinessStatus(meeting);
             
             return (
               <View
                 key={meeting.id}
                 className={styles.reviewCard}
-                onClick={() => handleCardClick(meeting.id)}
+                onClick={() => handleCardClick(meeting)}
               >
                 <View className={styles.cardHeader}>
                   <Text className={styles.projectName}>{meeting.projectName}</Text>
-                  <StatusTag text={dangerCategoryMap[meeting.dangerCategory]} type={meeting.dangerCategory as any} />
+                  <View className={styles.cardTags}>
+                    <StatusTag text={bizStatus.label} type={bizStatus.type as any} />
+                  </View>
                 </View>
                 
-                <Text className={styles.dangerName}>{meeting.dangerName}</Text>
+                <View className={styles.cardSubHeader}>
+                  <StatusTag text={dangerCategoryMap[meeting.dangerCategory]} type={meeting.dangerCategory as any} />
+                  <Text className={styles.dangerName}>{meeting.dangerName}</Text>
+                </View>
                 
                 <View className={styles.progressBar}>
                   <View className={styles.progressFill} style={{ width: `${progress}%` }}></View>
@@ -187,7 +261,7 @@ const PreReviewPage: React.FC = () => {
         ) : (
           <View className={styles.emptyState}>
             <Text className={styles.emptyIcon}>📋</Text>
-            <Text className={styles.emptyText}>暂无待预审项目</Text>
+            <Text className={styles.emptyText}>暂无相关项目</Text>
           </View>
         )}
       </View>

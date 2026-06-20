@@ -30,7 +30,9 @@ const MinutesPage: React.FC = () => {
   );
 
   const hasRectification = (m: Meeting) => {
-    return m.conclusion === 'modify' || m.conclusion === 'reject' || m.status === 'modify' || !!(m.rectificationMaterials && m.rectificationMaterials.length > 0) || m.rectificationSubmitted === true;
+    const bs = getBusinessStatus(m);
+    if (bs.type === 'reject') return false;
+    return m.conclusion === 'modify' || m.status === 'modify' || !!(m.rectificationMaterials && m.rectificationMaterials.length > 0) || m.rectificationSubmitted === true;
   };
 
   const getClosedCount = (m: Meeting) => {

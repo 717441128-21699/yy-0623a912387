@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Textarea } from '@tarojs/components';
+import { View, Text, ScrollView, Textarea, Input } from '@tarojs/components';
 import Taro, { useRouter, useDidShow } from '@tarojs/taro';
 import StatusTag from '@/components/StatusTag';
-import { severityMap, conclusionMap, getBusinessStatus } from '@/data/mockData';
+import { severityMap, conclusionMap, getBusinessStatus, dangerCategoryMap } from '@/data/mockData';
 import { generateId, getMaterialTypeLabel } from '@/utils';
 import { useMeetingStore } from '@/store/useMeetingStore';
 import type { ProblemItem, MaterialItem } from '@/types';
@@ -24,6 +24,7 @@ const RectificationPage: React.FC = () => {
   const [expertOpinion, setExpertOpinion] = useState('');
   const [editingResponseId, setEditingResponseId] = useState('');
   const [editingResponse, setEditingResponse] = useState('');
+  const [activeArchiveTab, setActiveArchiveTab] = useState<'minutes' | 'materials' | 'confirm' | 'opinion'>('minutes');
 
   useDidShow(() => {
     console.log('[RectificationPage] useDidShow - 刷新数据');
@@ -102,15 +103,13 @@ const RectificationPage: React.FC = () => {
     updateMeeting(meetingId, {
       status: newStatus,
       rectificationExpertOpinion: expertOpinion,
-      rectificationSubmitted: true
+      rectificationSubmitted: true,
+      rectificationSubmitTime: new Date().toLocaleString()
     });
     
     setTimeout(() => {
       Taro.hideLoading();
       Taro.showToast({ title: '提交成功', icon: 'success' });
-      setTimeout(() => {
-        Taro.navigateBack();
-      }, 1000);
     }, 500);
   };
 
@@ -129,6 +128,305 @@ const RectificationPage: React.FC = () => {
     );
   }
 
+  if (isArchived) {
+    return (
+      <ScrollView scrollY className={styles.pageContainer}>
+        <View className={styles.headerCard}>
+          <Text className={styles.projectName}>{meeting.projectName}</Text>
+          <Text className={styles.dangerName}>{meeting.dangerName}</Text>
+          <View className={styles.statusRow}>
+            <StatusTag text={bizStatus.label} type={bizStatus.type as any} />
+            <View className={styles.archivedTag}>
+              <Text>📋 已归档</Text>
+            </View>
+          </View>
+          <View className={styles.archiveMeta}>
+            <View className={styles.archiveMetaItem}>
+              <Text className={styles.metaLabel}>项目编号</Text>
+              <Text className={styles.metaValue}>{meeting.projectCode}</Text>
+            </View>
+            <View className={styles.archiveMetaItem}>
+              <Text className={styles.metaLabel}>危大类别</Text>
+              <Text className={styles.metaValue}>{dangerCategoryMap[meeting.dangerCategory]}</Text>
+            </View>
+            <View className={styles.archiveMetaItem}>
+              <Text className={styles.metaLabel}>会议时间</Text>
+              <Text className={styles.metaValue}>{meeting.meetingTime}</Text>
+            </View>
+            <View className={styles.archiveMetaItem}>
+              <Text className={styles.metaLabel}>提交时间</Text>
+              <Text className={styles.metaValue}>{meeting.rectificationSubmitTime || '已提交'}</Text>
+            </View>
+          </View>
+        </View>
+
+        <View className={styles.archiveNotice}>
+          <Text className={styles.noticeIcon}>📋</Text>
+          <View className={styles.noticeContent}>
+            <Text className={styles.noticeTitle}>整改确认已归档</Text>
+            <Text className={styles.noticeDesc}>本记录已提交确认意见并归档，内容仅供查阅</Text>
+          </View>
+        </View>
+
+        <View className={styles.archiveTabs}>
+          <View
+            className={`${styles.archiveTab} ${activeArchiveTab === 'minutes' ? styles.activeTab : ''}`}
+            onClick={() => setActiveArchiveTab('minutes')}
+          >
+            <Text>纪要正文</Text>
+          </View>
+          <View
+            className={`${styles.archiveTab} ${activeArchiveTab === 'materials' ? styles.activeTab : ''}`}
+            onClick={() => setActiveArchiveTab('materials')}
+          >
+            <Text>整改材料</Text>
+          </View>
+          <View
+            className={`${styles.archiveTab} ${activeArchiveTab === 'confirm' ? styles.activeTab : ''}`}
+            onClick={() => setActiveArchiveTab('confirm')}
+          >
+            <Text>闭合确认</Text>
+          </View>
+          <View
+            className={`${styles.archiveTab} ${activeArchiveTab === 'opinion' ? styles.activeTab : ''}`}
+            onClick={() => setActiveArchiveTab('opinion')}
+          >
+            <Text>专家意见</Text>
+          </View>
+        </View>
+
+        {activeArchiveTab === 'minutes' && (
+          <View className={styles.sectionCard}>
+            <View className={styles.sectionHeader}>
+              <Text className={styles.sectionTitle}>
+                <Text className={styles.titleIcon}>📄</Text>
+                会议纪要正文
+              </Text>
+            </View>
+            <View className={styles.minutesBody}>
+              <View className={styles.minutesTitle}>危大工程专项方案专家论证会议纪要</View>
+              
+              <View className={styles.minutesSection}>
+                <Text className={styles.minutesSectionTitle}>一、工程概况</Text>
+                <Text className={styles.minutesText}>项目名称：{meeting.projectName}</Text>
+                <Text className={styles.minutesText}>项目编号：{meeting.projectCode}</Text>
+                <Text className={styles.minutesText}>危大类别：{dangerCategoryMap[meeting.dangerCategory]}</Text>
+                <Text className={styles.minutesText}>工程名称：{meeting.dangerName}</Text>
+              </View>
+
+              <View className={styles.minutesSection}>
+                <Text className={styles.minutesSectionTitle}>二、会议信息</Text>
+                <Text className={styles.minutesText}>会议时间：{meeting.meetingTime}</Text>
+                <Text className={styles.minutesText}>会议地点：{meeting.meetingLocation}</Text>
+                <Text className={styles.minutesText}>主持人：{meeting.organizer}</Text>
+                {meeting.participantUnits.length > 0 && (
+                  <Text className={styles.minutesText}>
+                    参会单位：{meeting.participantUnits.map(u => `${u.name}（${u.role}）`).join('、')}
+                  </Text>
+                )}
+              </View>
+
+              <View className={styles.minutesSection}>
+                <Text className={styles.minutesSectionTitle}>三、问题讨论及论证结论</Text>
+                {problems.map((problem, index) => (
+                  <View key={problem.id} className={styles.minutesProblem}>
+                    <Text className={styles.minutesProblemTitle}>
+                      问题{index + 1}：{problem.content}
+                    </Text>
+                    <Text className={styles.minutesProblemDetail}>
+                      严重程度：{severityMap[problem.severity]} | 提出专家：{problem.expertName}
+                    </Text>
+                    {problem.discussion && (
+                      <Text className={styles.minutesProblemDetail}>
+                        讨论结论：{problem.discussion}
+                      </Text>
+                    )}
+                    {problem.conclusion && (
+                      <Text className={styles.minutesProblemDetail}>
+                        论证结论：{conclusionMap[problem.conclusion]}
+                      </Text>
+                    )}
+                    {problem.rectificationResponsible && (
+                      <Text className={styles.minutesProblemDetail}>
+                        整改责任人：{problem.rectificationResponsible}
+                      </Text>
+                    )}
+                  </View>
+                ))}
+              </View>
+
+              <View className={styles.minutesSection}>
+                <Text className={styles.minutesSectionTitle}>四、总体论证结论</Text>
+                <Text className={styles.minutesText} style={{ fontWeight: 'bold', color: '#1d2129' }}>
+                  {meeting.conclusion ? conclusionMap[meeting.conclusion] : '未设置'}
+                </Text>
+              </View>
+
+              {meeting.rectificationResponsible && (
+                <View className={styles.minutesSection}>
+                  <Text className={styles.minutesSectionTitle}>五、整改要求</Text>
+                  <Text className={styles.minutesText}>整改责任人：{meeting.rectificationResponsible}</Text>
+                  {meeting.rectificationDeadline && (
+                    <Text className={styles.minutesText}>整改期限：{meeting.rectificationDeadline}</Text>
+                  )}
+                </View>
+              )}
+            </View>
+          </View>
+        )}
+
+        {activeArchiveTab === 'materials' && (
+          <View className={styles.sectionCard}>
+            <View className={styles.sectionHeader}>
+              <Text className={styles.sectionTitle}>
+                <Text className={styles.titleIcon}>📁</Text>
+                整改材料
+              </Text>
+              {meeting.rectificationMaterials && (
+                <Text className={styles.sectionCount}>
+                  {meeting.rectificationMaterials.length} 份
+                </Text>
+              )}
+            </View>
+            <View className={styles.materialList}>
+              {meeting.rectificationMaterials && meeting.rectificationMaterials.length > 0 ? (
+                meeting.rectificationMaterials.map(mat => (
+                  <View key={mat.id} className={styles.materialItem} onClick={() => handleViewMaterial(mat.name)}>
+                    <View className={styles.materialIcon}>
+                      <Text>📄</Text>
+                    </View>
+                    <View className={styles.materialInfo}>
+                      <Text className={styles.materialName}>{mat.name}</Text>
+                      <View className={styles.materialMeta}>
+                        <Text className={styles.newTag}>整改版</Text>
+                        <Text>{mat.size} · {mat.uploadTime}</Text>
+                      </View>
+                    </View>
+                    <View className={styles.viewBtn}>
+                      <Text>查看</Text>
+                    </View>
+                  </View>
+                ))
+              ) : (
+                <View className={styles.noData}>
+                  <Text>未上传整改材料</Text>
+                </View>
+              )}
+            </View>
+          </View>
+        )}
+
+        {activeArchiveTab === 'confirm' && (
+          <View className={styles.sectionCard}>
+            <View className={styles.sectionHeader}>
+              <Text className={styles.sectionTitle}>
+                <Text className={styles.titleIcon}>✅</Text>
+                闭合确认记录
+              </Text>
+              <Text className={styles.sectionCount}>
+                {closedCount}/{totalCount} 项已闭合
+              </Text>
+            </View>
+            <View className={styles.confirmSummary}>
+              <View className={styles.confirmSummaryItem}>
+                <Text className={styles.confirmSummaryNumber}>{totalCount}</Text>
+                <Text className={styles.confirmSummaryLabel}>问题总数</Text>
+              </View>
+              <View className={styles.confirmSummaryItem}>
+                <Text className={`${styles.confirmSummaryNumber} ${styles.success}`}>{closedCount}</Text>
+                <Text className={styles.confirmSummaryLabel}>已闭合</Text>
+              </View>
+              <View className={styles.confirmSummaryItem}>
+                <Text className={`${styles.confirmSummaryNumber} ${styles.warning}`}>{pendingCount}</Text>
+                <Text className={styles.confirmSummaryLabel}>未闭合</Text>
+              </View>
+            </View>
+            <View className={styles.problemList}>
+              {problems.map((problem, index) => (
+                <View key={problem.id} className={styles.confirmRecord}>
+                  <View className={styles.confirmRecordHeader}>
+                    <View className={styles.confirmRecordLeft}>
+                      <Text className={styles.confirmIndex}>{index + 1}</Text>
+                      <View>
+                        <Text className={styles.confirmContent}>{problem.content}</Text>
+                        <Text className={styles.confirmExpert}>专家：{problem.expertName}</Text>
+                      </View>
+                    </View>
+                    <View className={`${styles.confirmBadge} ${problem.isRectified ? styles.closed : styles.unclosed}`}>
+                      <Text>{problem.isRectified ? '已闭合' : '未闭合'}</Text>
+                    </View>
+                  </View>
+                  {problem.rectificationResponse && (
+                    <View className={styles.confirmResponse}>
+                      <Text className={styles.confirmResponseLabel}>整改回复：</Text>
+                      <Text className={styles.confirmResponseText}>{problem.rectificationResponse}</Text>
+                    </View>
+                  )}
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {activeArchiveTab === 'opinion' && (
+          <View className={styles.sectionCard}>
+            <View className={styles.sectionHeader}>
+              <Text className={styles.sectionTitle}>
+                <Text className={styles.titleIcon}>💡</Text>
+                专家确认意见汇总
+              </Text>
+            </View>
+            <View className={styles.opinionSection}>
+              <View className={styles.opinionBlock}>
+                <Text className={styles.opinionBlockTitle}>总体结论</Text>
+                <View className={styles.opinionBlockContent}>
+                  <Text style={{ fontWeight: 'bold', color: '#1d2129' }}>
+                    {meeting.conclusion ? conclusionMap[meeting.conclusion] : '未设置'}
+                  </Text>
+                </View>
+              </View>
+              <View className={styles.opinionBlock}>
+                <Text className={styles.opinionBlockTitle}>整改责任人</Text>
+                <View className={styles.opinionBlockContent}>
+                  <Text>{meeting.rectificationResponsible || '待确认'}</Text>
+                </View>
+              </View>
+              <View className={styles.opinionBlock}>
+                <Text className={styles.opinionBlockTitle}>专家确认意见</Text>
+                <View className={styles.opinionBlockContent}>
+                  <Text>{meeting.rectificationExpertOpinion || '无'}</Text>
+                </View>
+              </View>
+              <View className={styles.opinionBlock}>
+                <Text className={styles.opinionBlockTitle}>提交时间</Text>
+                <View className={styles.opinionBlockContent}>
+                  <Text>{meeting.rectificationSubmitTime || '已提交'}</Text>
+                </View>
+              </View>
+              <View className={styles.opinionBlock}>
+                <Text className={styles.opinionBlockTitle}>各问题专家意见</Text>
+                <View className={styles.opinionBlockContent}>
+                  {problems.map((problem, index) => (
+                    <View key={problem.id} className={styles.opinionProblemItem}>
+                      <Text className={styles.opinionProblemIndex}>
+                        问题{index + 1}：{problem.expertName}
+                      </Text>
+                      <Text className={styles.opinionProblemText}>
+                        {problem.discussion || '无讨论记录'}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            </View>
+          </View>
+        )}
+
+        <View style={{ height: '40rpx' }}></View>
+      </ScrollView>
+    );
+  }
+
   return (
     <ScrollView scrollY className={styles.pageContainer}>
       <View className={styles.headerCard}>
@@ -136,11 +434,6 @@ const RectificationPage: React.FC = () => {
         <Text className={styles.dangerName}>{meeting.dangerName}</Text>
         <View className={styles.statusRow}>
           <StatusTag text={bizStatus.label} type={bizStatus.type as any} />
-          {isArchived && (
-            <View className={styles.archivedTag}>
-              <Text>📋 已归档</Text>
-            </View>
-          )}
         </View>
         <View className={styles.infoGrid}>
           <View className={styles.infoItem}>
@@ -157,16 +450,6 @@ const RectificationPage: React.FC = () => {
           </View>
         </View>
       </View>
-
-      {isArchived && (
-        <View className={styles.archiveNotice}>
-          <Text className={styles.noticeIcon}>📋</Text>
-          <View className={styles.noticeContent}>
-            <Text className={styles.noticeTitle}>整改确认已归档</Text>
-            <Text className={styles.noticeDesc}>本记录已提交确认意见并归档，内容仅供查阅</Text>
-          </View>
-        </View>
-      )}
 
       <View className={styles.sectionCard}>
         <View className={styles.sectionHeader}>
@@ -200,17 +483,11 @@ const RectificationPage: React.FC = () => {
                 </View>
               </View>
             ))
-          ) : (
-            <View className={styles.noData}>
-              <Text>{isArchived ? '未上传整改材料' : ''}</Text>
-            </View>
-          )}
-          {!isArchived && (
-            <View className={styles.uploadBtn} onClick={handleUploadMaterial}>
-              <Text className={styles.uploadIcon}>+</Text>
-              <Text>{meeting.rectificationMaterials && meeting.rectificationMaterials.length > 0 ? '继续上传' : '上传整改材料'}</Text>
-            </View>
-          )}
+          ) : null}
+          <View className={styles.uploadBtn} onClick={handleUploadMaterial}>
+            <Text className={styles.uploadIcon}>+</Text>
+            <Text>{meeting.rectificationMaterials && meeting.rectificationMaterials.length > 0 ? '继续上传' : '上传整改材料'}</Text>
+          </View>
         </View>
       </View>
 
@@ -237,31 +514,15 @@ const RectificationPage: React.FC = () => {
               <Text className={styles.problemContent}>{problem.content}</Text>
               <Text className={styles.expertInfo}>专家：{problem.expertName}</Text>
               
-              {problem.discussion && (
-                <View className={styles.discussionBox}>
-                  <Text className={styles.boxTitle}>讨论结论</Text>
-                  <Text className={styles.boxContent}>{problem.discussion}</Text>
-                </View>
-              )}
-              
-              {problem.conclusion && (
-                <View className={styles.conclusionBox}>
-                  <Text className={styles.boxTitle}>论证结论</Text>
-                  <StatusTag text={conclusionMap[problem.conclusion]} type={problem.conclusion as any} />
-                </View>
-              )}
-              
               <View className={styles.responseBox}>
                 <View style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Text className={styles.boxTitle}>
                     整改回复
                     {problem.rectificationResponse && <Text className={styles.tag}>已回复</Text>}
                   </Text>
-                  {!isArchived && (
-                    <View className={styles.editBtn} onClick={() => handleEditResponse(problem)}>
-                      <Text>编辑</Text>
-                    </View>
-                  )}
+                  <View className={styles.editBtn} onClick={() => handleEditResponse(problem)}>
+                    <Text>编辑</Text>
+                  </View>
                 </View>
                 {editingResponseId === problem.id ? (
                   <>
@@ -325,9 +586,7 @@ const RectificationPage: React.FC = () => {
       </View>
 
       <View className={styles.summaryCard}>
-        <Text className={styles.summaryTitle}>
-          {isArchived ? '整改确认归档记录' : '整改确认汇总'}
-        </Text>
+        <Text className={styles.summaryTitle}>整改确认汇总</Text>
         <View className={styles.summaryRow}>
           <Text className={styles.label}>问题总数</Text>
           <Text className={styles.value}>{totalCount} 项</Text>
@@ -357,35 +616,27 @@ const RectificationPage: React.FC = () => {
         
         <View className={styles.expertInput}>
           <Text className={styles.inputLabel}>专家确认意见</Text>
-          {isArchived ? (
-            <View className={styles.opinionDisplay}>
-              <Text>{meeting.rectificationExpertOpinion || '无'}</Text>
-            </View>
-          ) : (
-            <Textarea
-              className={styles.inputBox}
-              placeholder="请输入专家确认意见..."
-              value={expertOpinion}
-              onInput={(e) => setExpertOpinion(e.detail.value)}
-              maxlength={500}
-              autoHeight
-            />
-          )}
+          <Textarea
+            className={styles.inputBox}
+            placeholder="请输入专家确认意见..."
+            value={expertOpinion}
+            onInput={(e) => setExpertOpinion(e.detail.value)}
+            maxlength={500}
+            autoHeight
+          />
         </View>
       </View>
 
       <View style={{ height: '40rpx' }}></View>
 
-      {!isArchived && (
-        <View className={styles.bottomBar}>
-          <View className={styles.secondaryBtn} onClick={handleSaveDraft}>
-            <Text>保存草稿</Text>
-          </View>
-          <View className={styles.primaryBtn} onClick={handleSubmit}>
-            <Text>提交确认意见</Text>
-          </View>
+      <View className={styles.bottomBar}>
+        <View className={styles.secondaryBtn} onClick={handleSaveDraft}>
+          <Text>保存草稿</Text>
         </View>
-      )}
+        <View className={styles.primaryBtn} onClick={handleSubmit}>
+          <Text>提交确认意见</Text>
+        </View>
+      </View>
     </ScrollView>
   );
 };

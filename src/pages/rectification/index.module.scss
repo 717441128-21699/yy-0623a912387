@@ -42,6 +42,34 @@
     font-size: $font-size-xs;
   }
   
+  .archiveMeta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-md;
+    margin-top: $spacing-md;
+  }
+  
+  .archiveMetaItem {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: $radius-md;
+    padding: $spacing-sm $spacing-md;
+    flex: 1;
+    min-width: 45%;
+  }
+  
+  .metaLabel {
+    font-size: $font-size-xs;
+    opacity: 0.75;
+    display: block;
+  }
+  
+  .metaValue {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    display: block;
+    margin-top: 4rpx;
+  }
+  
   .infoGrid {
     display: flex;
     gap: $spacing-md;
@@ -64,6 +92,62 @@
         opacity: 0.8;
         margin-top: 4rpx;
       }
+    }
+  }
+}
+
+.archiveNotice {
+  margin: 0 $page-padding $spacing-lg;
+  background: rgba(0, 180, 42, 0.06);
+  border: 2rpx solid rgba(0, 180, 42, 0.2);
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  
+  .noticeIcon {
+    font-size: 48rpx;
+  }
+  
+  .noticeContent {
+    flex: 1;
+    
+    .noticeTitle {
+      font-size: $font-size-md;
+      font-weight: $font-weight-semibold;
+      color: $color-text-primary;
+      display: block;
+      margin-bottom: 4rpx;
+    }
+    
+    .noticeDesc {
+      font-size: $font-size-xs;
+      color: $color-text-tertiary;
+    }
+  }
+}
+
+.archiveTabs {
+  display: flex;
+  margin: 0 $page-padding $spacing-lg;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-xs;
+  box-shadow: $shadow-card;
+  
+  .archiveTab {
+    flex: 1;
+    text-align: center;
+    padding: $spacing-sm 0;
+    font-size: $font-size-sm;
+    color: $color-text-secondary;
+    border-radius: $radius-md;
+    
+    &.activeTab {
+      background: $color-primary;
+      color: $color-text-white;
+      font-weight: $font-weight-medium;
     }
   }
 }
@@ -372,76 +456,230 @@
   }
 }
 
-.archiveNotice {
-  margin: 0 $page-padding $spacing-lg;
-  background: rgba(0, 180, 42, 0.06);
-  border: 2rpx solid rgba(0, 180, 42, 0.2);
-  border-radius: $radius-lg;
-  padding: $spacing-lg;
-  display: flex;
-  align-items: center;
-  gap: $spacing-md;
-  
-  .noticeIcon {
-    font-size: 48rpx;
-  }
-  
-  .noticeContent {
-    flex: 1;
-    
-    .noticeTitle {
-      font-size: $font-size-md;
-      font-weight: $font-weight-semibold;
-      color: $color-text-primary;
-      display: block;
-      margin-bottom: 4rpx;
-    }
-    
-    .noticeDesc {
-      font-size: $font-size-xs;
-      color: $color-text-tertiary;
-    }
-  }
-}
-
-.discussionBox {
-  background: rgba(22, 93, 255, 0.04);
-  border-radius: $radius-md;
-  padding: $spacing-md;
-  margin-bottom: $spacing-md;
-  
-  .boxTitle {
-    font-size: $font-size-sm;
-    font-weight: $font-weight-medium;
-    color: $color-text-primary;
-    margin-bottom: $spacing-xs;
-  }
-  
-  .boxContent {
-    font-size: $font-size-sm;
-    color: $color-text-secondary;
-    line-height: 1.6;
-  }
-}
-
-.conclusionBox {
-  display: flex;
-  align-items: center;
-  gap: $spacing-sm;
-  margin-bottom: $spacing-md;
-  
-  .boxTitle {
-    font-size: $font-size-sm;
-    font-weight: $font-weight-medium;
-    color: $color-text-primary;
-  }
-}
-
 .noData {
   padding: $spacing-lg 0;
   text-align: center;
   font-size: $font-size-sm;
   color: $color-text-tertiary;
+}
+
+.minutesBody {
+  padding: $spacing-lg;
+  
+  .minutesTitle {
+    text-align: center;
+    font-size: $font-size-md;
+    font-weight: $font-weight-bold;
+    color: $color-text-primary;
+    padding-bottom: $spacing-md;
+    border-bottom: 2rpx solid $color-divider;
+    margin-bottom: $spacing-md;
+  }
+  
+  .minutesSection {
+    margin-bottom: $spacing-md;
+    
+    .minutesSectionTitle {
+      font-size: $font-size-sm;
+      font-weight: $font-weight-semibold;
+      color: $color-text-primary;
+      margin-bottom: $spacing-sm;
+      display: block;
+    }
+    
+    .minutesText {
+      font-size: $font-size-sm;
+      color: $color-text-secondary;
+      line-height: 1.8;
+      display: block;
+    }
+  }
+  
+  .minutesProblem {
+    padding: $spacing-sm $spacing-md;
+    background: $color-bg-page;
+    border-radius: $radius-md;
+    margin-bottom: $spacing-sm;
+    
+    .minutesProblemTitle {
+      font-size: $font-size-sm;
+      color: $color-text-primary;
+      font-weight: $font-weight-medium;
+      line-height: 1.6;
+      display: block;
+      margin-bottom: 4rpx;
+    }
+    
+    .minutesProblemDetail {
+      font-size: $font-size-xs;
+      color: $color-text-secondary;
+      line-height: 1.8;
+      display: block;
+    }
+  }
+}
+
+.confirmSummary {
+  display: flex;
+  gap: $spacing-md;
+  padding: $spacing-md $spacing-lg;
+  background: $color-bg-page;
+  margin: $spacing-md $spacing-lg;
+  border-radius: $radius-md;
+  
+  .confirmSummaryItem {
+    flex: 1;
+    text-align: center;
+    
+    .confirmSummaryNumber {
+      font-size: $font-size-xl;
+      font-weight: $font-weight-bold;
+      color: $color-text-primary;
+      display: block;
+      line-height: 1.2;
+      
+      &.success { color: $color-success; }
+      &.warning { color: $color-warning; }
+    }
+    
+    .confirmSummaryLabel {
+      font-size: $font-size-xs;
+      color: $color-text-tertiary;
+      margin-top: 4rpx;
+      display: block;
+    }
+  }
+}
+
+.confirmRecord {
+  padding: $spacing-md $spacing-lg;
+  border-bottom: 1rpx solid $color-divider;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+  
+  .confirmRecordHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  
+  .confirmRecordLeft {
+    display: flex;
+    flex: 1;
+    margin-right: $spacing-sm;
+  }
+  
+  .confirmIndex {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    color: $color-primary;
+    margin-right: $spacing-sm;
+    min-width: 36rpx;
+  }
+  
+  .confirmContent {
+    font-size: $font-size-sm;
+    color: $color-text-primary;
+    line-height: 1.5;
+    display: block;
+  }
+  
+  .confirmExpert {
+    font-size: $font-size-xs;
+    color: $color-text-tertiary;
+    margin-top: 4rpx;
+    display: block;
+  }
+  
+  .confirmBadge {
+    padding: 4rpx 16rpx;
+    border-radius: $radius-xs;
+    font-size: $font-size-xs;
+    white-space: nowrap;
+    
+    &.closed {
+      background: rgba(0, 180, 42, 0.1);
+      color: $color-success;
+    }
+    
+    &.unclosed {
+      background: rgba(245, 63, 63, 0.1);
+      color: $color-error;
+    }
+  }
+  
+  .confirmResponse {
+    margin-top: $spacing-sm;
+    padding: $spacing-sm $spacing-md;
+    background: $color-bg-page;
+    border-radius: $radius-md;
+  }
+  
+  .confirmResponseLabel {
+    font-size: $font-size-xs;
+    color: $color-text-tertiary;
+  }
+  
+  .confirmResponseText {
+    font-size: $font-size-sm;
+    color: $color-text-secondary;
+    line-height: 1.5;
+  }
+}
+
+.opinionSection {
+  padding: $spacing-lg;
+  
+  .opinionBlock {
+    margin-bottom: $spacing-md;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+    
+    .opinionBlockTitle {
+      font-size: $font-size-sm;
+      font-weight: $font-weight-semibold;
+      color: $color-text-primary;
+      margin-bottom: $spacing-sm;
+      display: block;
+    }
+    
+    .opinionBlockContent {
+      padding: $spacing-md;
+      background: $color-bg-page;
+      border-radius: $radius-md;
+      font-size: $font-size-sm;
+      color: $color-text-secondary;
+      line-height: 1.6;
+    }
+  }
+  
+  .opinionProblemItem {
+    padding: $spacing-sm 0;
+    border-bottom: 1rpx solid $color-divider;
+    
+    &:last-child {
+      border-bottom: none;
+    }
+    
+    .opinionProblemIndex {
+      font-size: $font-size-sm;
+      color: $color-text-primary;
+      font-weight: $font-weight-medium;
+      display: block;
+      margin-bottom: 4rpx;
+    }
+    
+    .opinionProblemText {
+      font-size: $font-size-xs;
+      color: $color-text-secondary;
+      line-height: 1.6;
+      display: block;
+    }
+  }
 }
 
 .bottomBar {

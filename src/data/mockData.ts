@@ -311,7 +311,6 @@ export const statusMap: Record<string, string> = {
 
 export const getBusinessStatus = (meeting: Meeting): { label: string; type: string } => {
   const { status, conclusion, problems, rectificationSubmitted } = meeting;
-  const hasRect = conclusion === 'modify' || conclusion === 'reject' || status === 'modify' || !!(meeting.rectificationMaterials && meeting.rectificationMaterials.length > 0);
   const closedCount = problems.filter(p => p.isRectified === true).length;
   const allClosed = problems.length > 0 && closedCount === problems.length;
   
@@ -321,11 +320,12 @@ export const getBusinessStatus = (meeting: Meeting): { label: string; type: stri
   if (rectificationSubmitted && !allClosed) {
     return { label: '整改确认中', type: 'rectifying' };
   }
+  if ((conclusion === 'reject' || status === 'reject') && !rectificationSubmitted) {
+    return { label: '重新论证', type: 'reject' };
+  }
+  const hasRect = conclusion === 'modify' || status === 'modify' || !!(meeting.rectificationMaterials && meeting.rectificationMaterials.length > 0);
   if (hasRect && !rectificationSubmitted) {
     return { label: '整改中', type: 'modify' };
-  }
-  if (conclusion === 'reject' || status === 'reject') {
-    return { label: '重新论证', type: 'reject' };
   }
   if (conclusion === 'pass' && status === 'pass') {
     return { label: '论证通过', type: 'pass' };

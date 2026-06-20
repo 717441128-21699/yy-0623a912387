@@ -380,6 +380,86 @@
   }
 }
 
+.formalTextSection {
+  margin: 0 $page-padding $spacing-lg;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  box-shadow: $shadow-card;
+  
+  .formalToggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $spacing-lg;
+    
+    .formalTitle {
+      font-size: $font-size-md;
+      font-weight: $font-weight-semibold;
+      color: $color-text-primary;
+    }
+    
+    .toggleIcon {
+      font-size: $font-size-sm;
+      color: $color-text-tertiary;
+    }
+  }
+  
+  .formalContent {
+    padding: 0 $spacing-lg $spacing-lg;
+  }
+  
+  .formalActions {
+    display: flex;
+    gap: $spacing-md;
+    margin-bottom: $spacing-md;
+  }
+  
+  .formalActionBtn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-md;
+    background: $color-bg-page;
+    border-radius: $radius-md;
+    border: 2rpx solid $color-border;
+    
+    &:active {
+      opacity: 0.8;
+      background: rgba(22, 93, 255, 0.05);
+      border-color: $color-primary;
+    }
+    
+    .actionIcon {
+      font-size: 40rpx;
+      margin-bottom: $spacing-xs;
+    }
+    
+    .actionLabel {
+      font-size: $font-size-sm;
+      color: $color-text-secondary;
+    }
+  }
+  
+  .formalTextBox {
+    background: $color-bg-page;
+    border-radius: $radius-md;
+    padding: $spacing-md;
+    max-height: 600rpx;
+    overflow-y: auto;
+  }
+  
+  .formalLine {
+    font-size: $font-size-sm;
+    color: $color-text-secondary;
+    line-height: 1.8;
+    display: block;
+    white-space: pre-wrap;
+  }
+}
+
 .bottomBar {
   position: fixed;
   left: 0;

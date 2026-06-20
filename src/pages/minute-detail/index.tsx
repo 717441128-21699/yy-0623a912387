@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, Textarea } from '@tarojs/components';
 import Taro, { useRouter, useDidShow } from '@tarojs/taro';
 import StatusTag from '@/components/StatusTag';
-import { statusMap, severityMap, conclusionMap, getBusinessStatus } from '@/data/mockData';
+import { statusMap, severityMap, conclusionMap, getBusinessStatus, dangerCategoryMap } from '@/data/mockData';
 import { useMeetingStore } from '@/store/useMeetingStore';
 import type { ProblemItem, ConclusionType } from '@/types';
 import styles from './index.module.scss';
@@ -23,6 +23,7 @@ const MinuteDetailPage: React.FC = () => {
   const [editingDiscussion, setEditingDiscussion] = useState('');
   const [editingId, setEditingId] = useState('');
   const [showMinutesPreview, setShowMinutesPreview] = useState(false);
+  const [showFormalText, setShowFormalText] = useState(false);
 
   useDidShow(() => {
     console.log('[MinuteDetailPage] useDidShow - 刷新数据');
@@ -92,6 +93,80 @@ const MinuteDetailPage: React.FC = () => {
         }
       }
     });
+  };
+
+  const generateFormalText = (): string => {
+    if (!meeting) return '';
+    const lines: string[] = [];
+    lines.push('危大工程专项方案专家论证会议纪要');
+    lines.push('');
+    lines.push('一、工程概况');
+    lines.push(`项目名称：${meeting.projectName}`);
+    lines.push(`项目编号：${meeting.projectCode}`);
+    lines.push(`危大类别：${dangerCategoryMap[meeting.dangerCategory]}`);
+    lines.push(`工程名称：${meeting.dangerName}`);
+    lines.push('');
+    lines.push('二、会议信息');
+    lines.push(`会议时间：${meeting.meetingTime}`);
+    lines.push(`会议地点：${meeting.meetingLocation}`);
+    lines.push(`主持人：${meeting.organizer}`);
+    if (meeting.participantUnits.length > 0) {
+      lines.push(`参会单位：${meeting.participantUnits.map(u => `${u.name}（${u.role}）`).join('、')}`);
+    }
+    lines.push('');
+    lines.push('三、问题讨论及论证结论');
+    problems.forEach((problem, index) => {
+      lines.push(`问题${index + 1}：${problem.content}`);
+      lines.push(`  严重程度：${severityMap[problem.severity]} | 提出专家：${problem.expertName}`);
+      if (problem.discussion) {
+        lines.push(`  讨论结论：${problem.discussion}`);
+      }
+      if (problem.conclusion) {
+        lines.push(`  论证结论：${conclusionMap[problem.conclusion]}`);
+      }
+      if (problem.rectificationResponsible) {
+        lines.push(`  整改责任人：${problem.rectificationResponsible}`);
+      }
+      lines.push('');
+    });
+    lines.push('四、总体论证结论');
+    lines.push(overallConclusion ? conclusionMap[overallConclusion] : '（未设置）');
+    lines.push('');
+    if (meeting.rectificationResponsible) {
+      lines.push('五、整改要求');
+      lines.push(`整改责任人：${meeting.rectificationResponsible}`);
+      if (meeting.rectificationDeadline) {
+        lines.push(`整改期限：${meeting.rectificationDeadline}`);
+      }
+    }
+    return lines.join('\n');
+  };
+
+  const handleCopyText = () => {
+    const text = generateFormalText();
+    Taro.setClipboardData({
+      data: text,
+      success: () => {
+        Taro.showToast({ title: '已复制到剪贴板', icon: 'success' });
+      }
+    });
+  };
+
+  const handleExportText = () => {
+    const text = generateFormalText();
+    const fs = Taro.getFileSystemManager();
+    const filePath = `${Taro.env.USER_DATA_PATH}/会议纪要_${meeting?.projectCode || 'export'}.txt`;
+    try {
+      fs.writeFileSync(filePath, text, 'utf8');
+      Taro.showToast({ title: '导出成功', icon: 'success' });
+    } catch (e) {
+      Taro.setClipboardData({
+        data: text,
+        success: () => {
+          Taro.showToast({ title: '已复制到剪贴板', icon: 'success' });
+        }
+      });
+    }
   };
 
   if (!meeting) {
@@ -276,7 +351,7 @@ const MinuteDetailPage: React.FC = () => {
                 <Text>项目编号：{meeting.projectCode}</Text>
               </View>
               <View className={styles.blockRow}>
-                <Text>危大类别：{meeting.dangerCategory === 'deep' ? '深基坑工程' : meeting.dangerCategory === 'high' ? '高大模板工程' : '大型吊装工程'}</Text>
+                <Text>危大类别：{dangerCategoryMap[meeting.dangerCategory]}</Text>
               </View>
               <View className={styles.blockRow}>
                 <Text>工程名称：{meeting.dangerName}</Text>
@@ -348,6 +423,36 @@ const MinuteDetailPage: React.FC = () => {
                 )}
               </View>
             )}
+          </View>
+        )}
+      </View>
+
+      <View className={styles.formalTextSection}>
+        <View 
+          className={styles.formalToggle}
+          onClick={() => setShowFormalText(!showFormalText)}
+        >
+          <Text className={styles.formalTitle}>📝 生成正式纪要文本</Text>
+          <Text className={styles.toggleIcon}>{showFormalText ? '▼' : '▶'}</Text>
+        </View>
+        
+        {showFormalText && (
+          <View className={styles.formalContent}>
+            <View className={styles.formalActions}>
+              <View className={styles.formalActionBtn} onClick={handleCopyText}>
+                <Text className={styles.actionIcon}>📋</Text>
+                <Text className={styles.actionLabel}>复制文本</Text>
+              </View>
+              <View className={styles.formalActionBtn} onClick={handleExportText}>
+                <Text className={styles.actionIcon}>📤</Text>
+                <Text className={styles.actionLabel}>导出文件</Text>
+              </View>
+            </View>
+            <View className={styles.formalTextBox}>
+              {generateFormalText().split('\n').map((line, i) => (
+                <Text key={i} className={styles.formalLine}>{line || '\u00A0'}</Text>
+              ))}
+            </View>
           </View>
         )}
       </View>
